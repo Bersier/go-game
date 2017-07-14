@@ -1,0 +1,41 @@
+package board.position
+
+import board.{Black, Color, Intersection, None, Size, White}
+import zobristcode.{ZCode128, ZobristBase64}
+
+object ZobristCoder {
+
+  private[this] val l: Int = Main
+
+  private[this] val zobristBase1 = new ZobristBase64(l * l * 3)
+  private[this] val zobristBase2 = new ZobristBase64(l * l * 3)
+
+  private[position] def computeCode(color: (Int, Int) => Color)(implicit size: Size): ZCode128 = {
+    var code1: Long = 0
+    var code2: Long = 0
+    for (i <- 0 until size) {
+      for (j <- 0 until size) {
+        code1 ^= code(i, j, color(i, j), zobristBase1)
+        code2 ^= code(i, j, color(i, j), zobristBase2)
+      }
+    }
+    ZCode128(code1, code2)
+  }
+
+  @inline private[position] def code1(x: Intersection, color: Color)(implicit size: Size): Long = {
+    code(x.i, x.j, color, zobristBase1)
+  }
+  @inline private[position] def code2(x: Intersection, color: Color)(implicit size: Size): Long = {
+    code(x.i, x.j, color, zobristBase2)
+  }
+
+  @inline private[this] def code(i: Int, j: Int, color: Color, zobristBase: ZobristBase64)
+                                (implicit size: Size): Long = {
+    val a = color match {
+      case None => 0
+      case White => 1
+      case Black => 2
+    }
+    zobristBase(3 * (size * i + j) + a)
+  }
+}

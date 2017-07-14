@@ -3,6 +3,9 @@ package board.position
 import board._
 import zobristcode.ZCode128
 
+/**
+  * Represents a position in a game of Go. Immutable.
+  */
 trait Position {
 
   /**
@@ -42,8 +45,8 @@ trait Position {
 
 object Position {
 
-  def initial: Position = new DefaultPositionImpl(Size(19))
+  def initial: Position = new DefaultPosition(Size(19))
 
-  def initial(size: Size): Position = new DefaultPositionImpl(size)
+  def initial(size: Size): Position = new DefaultPosition(size)
 }
 
