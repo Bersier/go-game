@@ -44,7 +44,6 @@ trait Position {
 }
 
 object Position {
-
-  def initial: Position = new DefaultPosition()
+  def initial(implicit size: Size): Position = new DefaultPosition()
 }
 

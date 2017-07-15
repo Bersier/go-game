@@ -2,7 +2,7 @@ package commons
 
 import board.{Color, Intersection, Size}
 
-final class MoveEncoder(implicit size: Size) {
+final class MoveEncoder(size: Size) {
 
   private[this] val length = 64 * math.log(2) / (math.log(3) + 2 * math.log(size: Int)) toInt
 

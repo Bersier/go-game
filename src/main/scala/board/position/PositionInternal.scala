@@ -1,8 +1,7 @@
 package board.position
 
-import board.{Black, Intersection, Move, None, Pass, ProperColor, White}
+import board.{Black, Intersection, Move, None, Pass, ProperColor, Size, White}
 import commons.Utils
-import main.Config.size
 
 private trait PositionInternal extends Position {
 
@@ -26,6 +25,8 @@ private trait PositionInternal extends Position {
     }
     case Pass => this
   }
+
+  protected[position] implicit def size: Size
 
   /**
     * @return a builder to build the next position, that starts from the current position

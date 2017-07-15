@@ -1,8 +1,7 @@
 package board.position
 
-import board.{Color, Intersection, None, ProperColor}
+import board.{Color, Intersection, None, ProperColor, Size}
 import commons.Utils
-import main.Config.size
 
 import scala.collection.mutable
 
@@ -50,4 +49,6 @@ private trait Builder {
   }
 
   protected[this] def apply(x: Intersection): Color
+
+  protected[this] implicit def size: Size
 }

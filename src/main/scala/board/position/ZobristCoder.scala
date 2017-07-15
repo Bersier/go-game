@@ -1,10 +1,11 @@
 package board.position
 
 import board.{Color, Intersection, Size}
-import main.Config.size
+import commons.Memoizer
+import main.Config
 import zobristcode.{ZCode128, ZobristBase64}
 
-object ZobristCoder {
+class ZobristCoder(size: Size) {
 
   private[this] val l: Int = size * size * 3
 
@@ -34,4 +35,10 @@ object ZobristCoder {
                                 (implicit size: Size): Long = {
     zobristBase(3 * (size * i + j) + color.toInt)
   }
+}
+
+object ZobristCoder {
+  private val zobristCoderMem = Memoizer((i: Int) => new ZobristCoder(Size(i)))(Config.maxSize)
+
+  def apply(implicit size: Size): ZobristCoder = zobristCoderMem(size)
 }

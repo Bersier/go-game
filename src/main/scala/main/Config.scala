@@ -4,5 +4,5 @@ import board.Size
 
 object Config {
 
-  implicit val size: Size = Size(19)
+  implicit val maxSize: Size = Size(32)
 }
