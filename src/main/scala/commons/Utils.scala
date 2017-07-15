@@ -72,7 +72,7 @@ object Utils {
   }
 
   def intPseudoShuffle(log2: Int) = new IndexedSeq[Int] {
-    require(log2 + 1 < 32)
+    assert(log2 + 1 < 32)
 
     private[this] val mask = Random.nextInt >>> (32 - log2)
     private[this] val mixer = shuffledRange(log2.toByte)

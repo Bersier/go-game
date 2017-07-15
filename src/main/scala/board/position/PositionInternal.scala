@@ -2,6 +2,7 @@ package board.position
 
 import board.{Black, Intersection, Move, None, Pass, ProperColor, Size, White}
 import commons.Utils
+import zobristcode.ZCode128
 
 private trait PositionInternal extends Position {
 
@@ -14,13 +15,10 @@ private trait PositionInternal extends Position {
   def withMove(move: Move, player: ProperColor)
               (implicit prev: Set[Position]): Position = move match {
     case x: Intersection => {
-      require(apply(x) == None, s"Illegal move: $x is already occupied")
-      require(prev(this), "'previous' should contain the current position")
-      val builder = nextPositionBuilder
-      builder.update(x, player)
-      builder.cleanup(x, player)
-      val result = builder.build
-      require(!prev(result), s"Illegal move: results in a previous position: $result")
+      assert(apply(x) == None, s"Illegal move: $x is already occupied")
+      assert(prev(this), "'previous' should contain the current position")
+      val result = nextPositionBuilder.playAt(x, player).build
+      assert(!prev(result), s"Illegal move: results in a previous position: $result")
       result
     }
     case Pass => this
@@ -42,15 +40,21 @@ private trait PositionInternal extends Position {
   private[this] def withMove(x: Intersection, color: ProperColor)
                             (implicit forbidden: Set[Position]): Option[Position] = this(x) match {
     case None => {
-      val builder = nextPositionBuilder
-      builder.update(x, color)
-      builder.cleanup(x, color)
-      val result = builder.build
+      val result = nextPositionBuilder.playAt(x, color).build
       if (result == this || forbidden(result)) Option.empty
       else Some(result)
     }
     case _ => Option.empty
   }
+
+  override def toZobristCode: ZCode128 = ZobristCoder.get.computeCode((i, j) => this(i, j))
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Position => this.toZobristCode == that.toZobristCode
+    case _ => false
+  }
+
+  override def hashCode: Int = toZobristCode._2.toInt
 
   override def toString: String = {
     val builder = StringBuilder
@@ -67,15 +71,4 @@ private trait PositionInternal extends Position {
     }
     builder.toString
   }
-
-  override def equals(other: Any): Boolean = other match {
-    case that: Position => 0 until size forall {
-      i => 0 until size forall {
-        j => this (i, j) == that(i, j)
-      }
-    }
-    case _ => false
-  }
-
-  override def hashCode: Int = toZobristCode._2.toInt
 }

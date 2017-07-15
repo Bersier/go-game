@@ -6,7 +6,7 @@ object LongEncoder {
     var result = 0L
     var multiplier = 1L
     for ((p, b) <- pieces.zip(bounds)) {
-      require(p < b)
+      assert(p < b)
       result += p*multiplier
       multiplier *= b
     }

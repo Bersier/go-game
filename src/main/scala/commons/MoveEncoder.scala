@@ -7,7 +7,7 @@ final class MoveEncoder(size: Size) {
   private[this] val length = 64 * math.log(2) / (math.log(3) + 2 * math.log(size: Int)) toInt
 
   def encode(moves: Seq[(Intersection, Color)]): Long = {
-    require(moves.length == length)
+    assert(moves.length == length)
     val pieces = moves.flatMap(move => Seq(move._1.i, move._1.j, move._2.toInt))
     LongEncoder.encode(pieces, Bounds)
   }

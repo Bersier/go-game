@@ -5,8 +5,8 @@ sealed trait Move
 case object Pass extends Move
 
 final class Intersection private(val i: Byte, val j: Byte) extends Move {
-  require(i >= 0)
-  require(j >= 0)
+  assert(i >= 0)
+  assert(j >= 0)
 
   /**
     * @param size of the board

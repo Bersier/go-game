@@ -6,7 +6,7 @@ import zobristcode.ZCode128
 /**
   * Represents a position in a game of Go. Immutable.
   */
-trait Position {
+trait Position extends {
 
   /**
     * @return the color at the specified intersection

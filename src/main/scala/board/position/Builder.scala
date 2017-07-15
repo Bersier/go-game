@@ -11,13 +11,39 @@ import scala.collection.mutable
 private trait Builder {
 
   /**
-    * Sets the color at x.
+    * Executes play at the given intersection with the given color.
     */
-  def update(x: Intersection, color: Color): Unit
+  @inline final def playAt(x: Intersection, color: ProperColor): this.type = {
+    update(x, color)
+    cleanup(x, color)
+    this
+  }
 
+  /**
+    * @return a Position corresponding to this builder
+    */
   def build: Position
 
-  final def cleanup(x: Intersection, color: ProperColor) {
+  /**
+    * @return the color at 'x'
+    */
+  protected[this] def apply(x: Intersection): Color
+
+  /**
+    * Sets the color at x.
+    */
+  protected[this] def update(x: Intersection, color: Color): Unit
+
+  /**
+    * @return the size of the board
+    */
+  protected[this] implicit def size: Size
+
+  /**
+    * Removes all stones that died from player 'color' playing at 'x'.
+    */
+  private[this] def cleanup(x: Intersection, color: ProperColor) {
+    assert(apply(x) == color)
     def removeDead(x: Intersection, color: ProperColor)(alive: mutable.Set[Intersection]) {
       val visited = mutable.Set[Intersection]()
       def isAlive(intersection: Intersection): Boolean = {
@@ -27,7 +53,7 @@ private trait Builder {
         else if (apply(intersection) != color) false
         else {
           visited += intersection
-          intersection.neighbors(size).exists(isAlive)
+          intersection.neighbors.exists(isAlive)
         }
       }
 
@@ -41,14 +67,10 @@ private trait Builder {
     }
 
     val transAlives = mutable.Set[Intersection]()
-    for (n <- x.neighbors(size) if apply(n) == color.dual) {
+    for (n <- x.neighbors if apply(n) == color.dual) {
       removeDead(n, color.dual)(transAlives)
     }
 
     removeDead(x, color)(Utils.MockSet)
   }
-
-  protected[this] def apply(x: Intersection): Color
-
-  protected[this] implicit def size: Size
 }
