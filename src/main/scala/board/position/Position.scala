@@ -5,6 +5,8 @@ import zobristcode.ZCode128
 
 /**
   * Represents a position in a game of Go. Immutable.
+  *
+  * Extend PositionInternal instead of this trait.
   */
 trait Position extends {
 

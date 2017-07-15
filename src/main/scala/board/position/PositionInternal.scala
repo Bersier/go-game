@@ -15,10 +15,10 @@ private trait PositionInternal extends Position {
   def withMove(move: Move, player: ProperColor)
               (implicit prev: Set[Position]): Position = move match {
     case x: Intersection => {
-      assert(apply(x) == None, s"Illegal move: $x is already occupied")
-      assert(prev(this), "'previous' should contain the current position")
+      require(apply(x) == None, s"Illegal move: $x is already occupied")
+      require(prev(this), "'previous' should contain the current position")
       val result = nextPositionBuilder.playAt(x, player).build
-      assert(!prev(result), s"Illegal move: results in a previous position: $result")
+      require(!prev(result), s"Illegal move: results in a previous position: $result")
       result
     }
     case Pass => this
@@ -39,11 +39,7 @@ private trait PositionInternal extends Position {
 
   private[this] def withMove(x: Intersection, color: ProperColor)
                             (implicit forbidden: Set[Position]): Option[Position] = this(x) match {
-    case None => {
-      val result = nextPositionBuilder.playAt(x, color).build
-      if (result == this || forbidden(result)) Option.empty
-      else Some(result)
-    }
+    case None => Some(nextPositionBuilder.playAt(x, color).build).filterNot(forbidden)
     case _ => Option.empty
   }
 

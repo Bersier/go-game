@@ -1,19 +1,11 @@
 package zobristcode
 
-/**
-  * Careful, mutable!
-  */
 trait ZCode128 {
 
   @inline def _1: Long
   @inline def _2: Long
 
-  def ^(that: ZCode128)
-
-  /**
-    * Mutates this!
-    */
-  def ^=(that: ZCode128): Unit
+  def ^(that: ZCode128): ZCode128
 
   override def equals(other: Any): Boolean = other match {
     case that: ZCode128 => this._1 == that._1 && this._2 == that._2

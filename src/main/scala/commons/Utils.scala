@@ -71,6 +71,10 @@ object Utils {
     intLog(n, 0)
   }
 
+  /**
+    * The permutation of an element is obtained by applying a fixed random permutation of its bits
+    * and a random bitmask to it.
+    */
   def intPseudoShuffle(log2: Int) = new IndexedSeq[Int] {
     assert(log2 + 1 < 32)
 

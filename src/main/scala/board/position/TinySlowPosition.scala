@@ -1,7 +1,7 @@
 package board.position
 
 import board.{Color, Intersection, Size}
-import commons.{Memoizer, MoveEncoder}
+import commons.Memoizer
 import main.Config
 import zobristcode.ZCode128
 
@@ -23,8 +23,7 @@ class TinySlowPosition private(reference: PositionInternal, updates: Long)
   override def toZobristCode: ZCode128 = {
     TinySlowPosition.moveEncoder.decode(updates).foldLeft(reference.toZobristCode) {
       case (zCode128: ZCode128, (x: Intersection, color: Color)) => {
-        zCode128 ^= ZobristCoder.get.code128(x, color)
-        zCode128
+        zCode128 ^ ZobristCoder.get.code128(x, color)
       }
     }
   }
@@ -32,7 +31,7 @@ class TinySlowPosition private(reference: PositionInternal, updates: Long)
   override protected[position] implicit def size: Size = reference.size
 }
 
-object TinySlowPosition {
+private object TinySlowPosition {
   private val moveEncoderMem = Memoizer((i: Int) => new MoveEncoder(Size(i)))(Config.maxSize)
 
   def moveEncoder(implicit size: Size): MoveEncoder = moveEncoderMem(size)
