@@ -1,23 +1,34 @@
 package board.position
 
-import board.{Color, Intersection, None, Size}
+import board.{Color, Intersection, None}
 import zobristcode.ZCode128
+import main.Config.size
 
-private final
-class DefaultPosition private(board: Array[Array[Color]],
-                              private[this] var vCode1: Long,
-                              private[this] var vCode2: Long) extends PositionInternal with Builder {
+private final class DefaultPosition private(board: Array[Array[Color]],
+                                            private[this] var zCode1: Long,
+                                            private[this] var zCode2: Long)
+  extends PositionInternal with Builder {
 
-  private[this] def this(size: Size, zCode: ZCode128) = {
-    this(Array.fill[Color](size, size)(None), zCode._1, zCode._2)
+  private[this] def this(board: Array[Array[Color]], zCode: ZCode128) = {
+    this(board, zCode._1, zCode._2)
+  }
+
+  private[this] def this(zCode: ZCode128) = {
+    this(Array.fill[Color](size, size)(None), zCode)
   }
 
   //noinspection UnnecessaryPartialFunction
-  def this(size: Size) = {
-    this(size, ZobristCoder.computeCode{ case _ => None }(size))
+  def this() = {
+    this(ZobristCoder.computeCode{ case _ => None })
   }
 
-  override def size: Size = Size(board.length)
+  def this(board: Array[Array[Color]]) = {
+    this(board, ZobristCoder.computeCode{ (i, j) => board(i)(j) })
+  }
+
+  def this(map: (Int, Int) => Color) = {
+    this(Array.tabulate(size, size)(map))
+  }
 
   override def apply(i: Int, j: Int): Color = board(i)(j)
 
@@ -43,10 +54,7 @@ class DefaultPosition private(board: Array[Array[Color]],
   override def build: Position = this
 
   private[this] def updateZCode(x: Intersection, oldColor: Color, newColor: Color): Unit = {
-    vCode1 ^= ZobristCoder.code1(x, oldColor)(size) ^ ZobristCoder.code1(x, newColor)(size)
-    vCode2 ^= ZobristCoder.code2(x, oldColor)(size) ^ ZobristCoder.code2(x, newColor)(size)
+    zCode1 ^= ZobristCoder.code1(x, oldColor) ^ ZobristCoder.code1(x, newColor)
+    zCode2 ^= ZobristCoder.code2(x, oldColor) ^ ZobristCoder.code2(x, newColor)
   }
-
-  @inline private[this] def zCode1: Long = vCode1
-  @inline private[this] def zCode2: Long = vCode2
 }

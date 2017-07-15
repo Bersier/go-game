@@ -1,7 +1,8 @@
 package board.position
 
-import board.{Black, Intersection, Move, None, Pass, ProperColor, Size, White}
+import board.{Black, Intersection, Move, None, Pass, ProperColor, White}
 import commons.Utils
+import main.Config.size
 
 private trait PositionInternal extends Position {
 
@@ -27,18 +28,13 @@ private trait PositionInternal extends Position {
   }
 
   /**
-    * @return the size of one side of the square board
-    */
-  protected[this] implicit def size: Size
-
-  /**
     * @return a builder to build the next position, that starts from the current position
     */
   protected[this] def nextPositionBuilder: Builder
 
   private[this] def intersections: Iterator[Intersection] = {
     for (k <- Utils.cheapShuffledRange(size * size).iterator) yield {
-      Intersection((k / size).toByte, (k % size).toByte)
+      Intersection(k / size, k % size)
     }
   }
 

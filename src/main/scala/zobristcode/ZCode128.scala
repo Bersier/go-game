@@ -8,27 +8,12 @@ trait ZCode128 {
   @inline def _1: Long
   @inline def _2: Long
 
-  def copy: ZCode128
-
   def ^(that: ZCode128)
 
   /**
     * Mutates this!
     */
-  def ^=(that: ZCode128): Unit = {
-    xorUpdate_1(that._1)
-    xorUpdate_2(that._2)
-  }
-
-  /**
-    * Mutates this!
-    */
-  @inline def xorUpdate_1(l1: Long): Unit
-
-  /**
-    * Mutates this!
-    */
-  @inline def xorUpdate_2(l2: Long): Unit
+  def ^=(that: ZCode128): Unit
 
   override def equals(other: Any): Boolean = other match {
     case that: ZCode128 => this._1 == that._1 && this._2 == that._2

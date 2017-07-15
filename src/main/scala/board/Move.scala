@@ -4,7 +4,7 @@ sealed trait Move
 
 case object Pass extends Move
 
-final case class Intersection(i: Byte, j: Byte) extends Move {
+final class Intersection private(val i: Byte, val j: Byte) extends Move {
   require(i >= 0)
   require(j >= 0)
 
@@ -14,10 +14,10 @@ final case class Intersection(i: Byte, j: Byte) extends Move {
     */
   def neighbors(implicit size: Size): Traversable[Intersection] = new Traversable[Intersection] {
     override def foreach[U](f: (Intersection) => U): Unit = {
-      if (i > 0) f(Intersection((i - 1).toByte, j))
-      if (j > 0) f(Intersection(i, (j - 1).toByte))
-      if (i + 1 < size) f(Intersection((i + 1).toByte, j))
-      if (j + 1 < size) f(Intersection(i, (j + 1).toByte))
+      if (i > 0) f(Intersection(i - 1, j))
+      if (j > 0) f(Intersection(i, j - 1))
+      if (i + 1 < size) f(Intersection(i + 1, j))
+      if (j + 1 < size) f(Intersection(i, j + 1))
     }
   }
 
@@ -29,4 +29,15 @@ final case class Intersection(i: Byte, j: Byte) extends Move {
   override def hashCode():Int = {
     i * ((1<<16) + 1) + j
   }
+
+  override def toString = s"[$i,$j]"
+}
+
+object Intersection {
+
+  def apply(i: Byte, j: Byte): Intersection = new Intersection(i, j)
+
+  def apply(i: Int, j: Int): Intersection = new Intersection(i.toByte, j.toByte)
+
+  def unapply(arg: Intersection): Option[(Int, Int)] = Some(arg.i, arg.j)
 }

@@ -11,7 +11,7 @@ trait Position {
   /**
     * @return the color at the specified intersection
     */
-  def apply(i: Int, j: Int): Color
+  def apply(i: Int, j: Int): Color = apply(Intersection(i, j))
 
   /**
     * @return the color at the given intersection
@@ -45,8 +45,6 @@ trait Position {
 
 object Position {
 
-  def initial: Position = new DefaultPosition(Size(19))
-
-  def initial(size: Size): Position = new DefaultPosition(size)
+  def initial: Position = new DefaultPosition()
 }
 
