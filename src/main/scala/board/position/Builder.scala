@@ -35,11 +35,6 @@ private trait Builder {
   protected[this] def update(x: Intersection, color: Color): Unit
 
   /**
-    * @return the size of the board
-    */
-  protected[this] implicit def size: Size
-
-  /**
     * Removes all stones that died from player 'color' playing at 'x'.
     */
   private[this] def cleanup(x: Intersection, color: ProperColor) {

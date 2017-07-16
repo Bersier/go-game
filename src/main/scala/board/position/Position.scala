@@ -18,7 +18,7 @@ trait Position extends {
   /**
     * @return the color at the given intersection
     */
-  def apply(point: Intersection): Color = apply(point.i, point.j)
+  def apply(x: Intersection): Color = apply(x.i, x.j)
 
   /**
     * The order of the returned positions is randomized (but not uniformly over all permutations).
@@ -44,6 +44,9 @@ trait Position extends {
     */
   def toZobristCode: ZCode128
 
+  /**
+    * @return the size of the board
+    */
   protected[position] implicit def size: Size
 }
 

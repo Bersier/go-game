@@ -6,5 +6,5 @@ object Size {
 
   def apply(value: Int) = new Size(value)
 
-  implicit def SizeToInt(size: Size): Int = size.value
+  implicit def sizeToInt(size: Size): Int = size.value
 }

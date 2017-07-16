@@ -6,8 +6,7 @@ import main.Config
 import zobristcode.ZCode128
 
 private final
-class TinySlowPosition private(reference: PositionInternal, updates: Long)
-  extends PositionInternal {
+class TinySlowPosition private(reference: Position, updates: Long) extends PositionInternal {
 
   override protected[this] def nextPositionBuilder: Builder = Builder(apply: (Int, Int) => Color)
 

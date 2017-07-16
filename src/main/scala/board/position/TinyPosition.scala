@@ -5,8 +5,7 @@ import commons.Utils
 import zobristcode.ZCode128
 
 private final
-class TinyPosition private(reference: PositionInternal, updates: Long)
-  extends PositionInternal {
+class TinyPosition private(reference: Position, updates: Long) extends PositionInternal {
 
   override protected[this] def nextPositionBuilder: Builder = Builder(apply: (Int, Int) => Color)
 
@@ -38,4 +37,3 @@ class TinyPosition private(reference: PositionInternal, updates: Long)
     }
   }
 }
-

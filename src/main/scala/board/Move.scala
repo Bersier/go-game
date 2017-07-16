@@ -6,45 +6,10 @@ sealed trait Move extends Any
 
 case object Pass extends Move
 
-//final class Intersection private(val i: Byte, val j: Byte) extends Move {
-//  assert(i >= 0)
-//  assert(j >= 0)
-//
-//  /**
-//    * @param size of the board
-//    * @return all the neighbors of this intersection
-//    */
-//  def neighbors(implicit size: Size): Traversable[Intersection] = new Traversable[Intersection] {
-//    override def foreach[U](f: (Intersection) => U): Unit = {
-//      if (i > 0) f(Intersection(i - 1, j))
-//      if (j > 0) f(Intersection(i, j - 1))
-//      if (i + 1 < Intersection.this.size) f(Intersection(i + 1, j))
-//      if (j + 1 < Intersection.this.size) f(Intersection(i, j + 1))
-//    }
-//  }
-//
-//  override def equals(any: Any): Boolean = any match {
-//    case that: Intersection => this.i == that.i && this.j == that.j
-//    case _ => false
-//  }
-//
-//  override def hashCode():Int = {
-//    i * ((1<<16) + 1) + j
-//  }
-//
-//  override def toString = s"[$i,$j]"
-//}
-//
-//object Intersection {
-//
-//  def apply(i: Int, j: Int): Intersection = new Intersection(i.toByte, j.toByte)
-//
-//  def unapply(x: Intersection): Option[(Int, Int)] = Some(x.i, x.j)
-//}
-
 final class Intersection private(val x: Int) extends AnyVal with Move {
 
   def i: Int = x >>> 2*Intersection.shift
+
   def j: Int = x >>>   Intersection.shift
 
   /**
@@ -67,7 +32,7 @@ final class Intersection private(val x: Int) extends AnyVal with Move {
     }
   }
 
-  def toString(implicit size: Size): String = s"[$i,$j]"
+  override def toString: String = s"[$i,$j]"
 
   private[this] implicit def size: Size = Size(x & Intersection.maxSize)
 }
