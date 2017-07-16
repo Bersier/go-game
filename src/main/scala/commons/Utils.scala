@@ -74,6 +74,8 @@ object Utils {
   /**
     * The permutation of an element is obtained by applying a fixed random permutation of its bits
     * and a random bitmask to it.
+    *
+    * All possible permutations obtained in this way form a subgroup of the permutation group.
     */
   def intPseudoShuffle(log2: Int) = new IndexedSeq[Int] {
     assert(log2 + 1 < 32)

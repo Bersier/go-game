@@ -5,9 +5,11 @@ import commons.Utils
 import zobristcode.ZCode128
 
 private final
-class TinyPosition private(reference: Position, updates: Long) extends PositionInternal {
+class TinyPosition(reference: PositionInternal, updates: Long) extends PositionInternal {
 
-  override protected[this] def nextPositionBuilder: Builder = Builder(apply: (Int, Int) => Color)
+  override protected[this] def nextPositionBuilder: Builder = {
+    new TinyBuilder(reference).update(updatedIntersections)
+  }
 
   override def apply(x: Intersection): Color = {
     updatedIntersections
@@ -25,14 +27,14 @@ class TinyPosition private(reference: Position, updates: Long) extends PositionI
 
   override protected[position] implicit def size: Size = reference.size
 
-  private[this] def updatedIntersections = {
-    val sizeBits = Utils.intLog(size - 1)
-    val moveBits = 2*sizeBits + 2
-    val coordinateMask = (1 << sizeBits) - 1
-    for (b <- 0 to 64 - moveBits by moveBits) yield {
+  private[this] def updatedIntersections: Iterator[(Intersection, Color)] = {
+    val sizeBitCount = Utils.intLog(size - 1)
+    val moveBitCount = 2*sizeBitCount + 2
+    val coordinateMask = (1 << sizeBitCount) - 1
+    for (b <- (0 to (64 - moveBitCount) by moveBitCount).toIterator) yield {
       val i = (updates >>> b) & coordinateMask
-      val j = (updates >>> (b + sizeBits)) & coordinateMask
-      val colorLong = (updates >>> (b + 2*sizeBits)) & 3
+      val j = (updates >>> (b + sizeBitCount)) & coordinateMask
+      val colorLong = (updates >>> (b + 2*sizeBitCount)) & 3
       (Intersection(i.toInt, j.toInt), Color.fromInt(colorLong.toInt))
     }
   }

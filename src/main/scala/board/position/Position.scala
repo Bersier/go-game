@@ -1,6 +1,7 @@
 package board.position
 
 import board._
+import commons.Utils
 import zobristcode.ZCode128
 
 /**
@@ -8,7 +9,7 @@ import zobristcode.ZCode128
   *
   * Extend PositionInternal instead of this trait.
   */
-trait Position extends {
+trait Position {
 
   /**
     * @return the color at the specified intersection
@@ -43,18 +44,26 @@ trait Position extends {
     * @return a 128 bit long hash code for this position
     */
   def toZobristCode: ZCode128
-
-  /**
-    * @return the size of the board
-    */
-  protected[position] implicit def size: Size
 }
 
 object Position {
+
   def initial(implicit size: Size): Position = new DefaultPosition()
 
   def apply(stateDescription: (Int, Int) => Color)(implicit size: Size): Position = {
     new DefaultPosition(stateDescription)
+  }
+
+  /**
+    * The order of the returned intersections is randomized (but not uniformly over all
+    * permutations).
+    *
+    * @return all the intersections of a board of the given size
+    */
+  def intersections(implicit size: Size): Iterator[Intersection] = {
+    for (k <- Utils.cheapShuffledRange(size * size).iterator) yield {
+      Intersection(k / size, k % size)
+    }
   }
 }
 

@@ -5,7 +5,7 @@ trait ZCode128 {
   @inline def _1: Long
   @inline def _2: Long
 
-  def ^(that: ZCode128): ZCode128
+  def ^(that: ZCode128): ZCode128 = new ZCode128Impl(this._1 ^ that._1, this._2 ^ that._2)
 
   override def equals(other: Any): Boolean = other match {
     case that: ZCode128 => this._1 == that._1 && this._2 == that._2
@@ -18,6 +18,5 @@ trait ZCode128 {
 }
 
 object ZCode128 {
-
   def apply(l1: Long, l2: Long): ZCode128 = new ZCode128Impl(l1, l2)
 }

@@ -21,15 +21,15 @@ private final class DefaultPosition private(board: Array[Array[Color]],
     this(board, ZobristCoder.get.computeCode{ (i, j) => board(i)(j) })
   }
 
-  def this(map: (Int, Int) => Color)(implicit size: Size) = {
-    this(Array.tabulate(size, size)(map))
-  }
+  def this(map: (Int, Int) => Color)(implicit size: Size) = this(Array.tabulate(size, size)(map))
+
+  def this(position: PositionInternal) = this((i, j) => position(i, j))(position.size)
 
   override def apply(i: Int, j: Int): Color = board(i)(j)
 
   override implicit def size: Size = Size(board.length)
 
-  override def nextPositionBuilder: Builder = {
+  override protected[this] def nextPositionBuilder: Builder = {
     new DefaultPosition(board map (_.clone()), zCode1, zCode2)
   }
 
@@ -37,7 +37,7 @@ private final class DefaultPosition private(board: Array[Array[Color]],
 
   override def hashCode: Int = zCode2.toInt
 
-  override def update(x: Intersection, color: Color): Unit = {
+  override protected[this] def update(x: Intersection, color: Color): Unit = {
     updateZCode(x, this(x), color)
     board(x.i)(x.j) = color
   }

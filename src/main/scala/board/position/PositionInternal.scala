@@ -1,14 +1,13 @@
 package board.position
 
 import board.{Black, Intersection, Move, None, Pass, ProperColor, Size, White}
-import commons.Utils
 import zobristcode.ZCode128
 
 private trait PositionInternal extends Position {
 
   final override
   def nextPositions(player: ProperColor)(implicit forbidden: Set[Position]): Iterator[Position] = {
-    for (x <- this.intersections; n <- withMove(x, player)) yield n
+    for (x <- Position.intersections; n <- withMove(x, player)) yield n
   }
 
   final override
@@ -25,15 +24,14 @@ private trait PositionInternal extends Position {
   }
 
   /**
+    * @return the size of the board
+    */
+  protected[position] implicit def size: Size
+
+  /**
     * @return a builder to build the next position, that starts from the current position
     */
   protected[this] def nextPositionBuilder: Builder
-
-  private[this] def intersections: Iterator[Intersection] = {
-    for (k <- Utils.cheapShuffledRange(size * size).iterator) yield {
-      Intersection(k / size, k % size)
-    }
-  }
 
   private[this] def withMove(x: Intersection, color: ProperColor)
                             (implicit forbidden: Set[Position]): Option[Position] = this(x) match {

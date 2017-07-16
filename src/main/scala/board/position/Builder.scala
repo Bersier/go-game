@@ -13,7 +13,7 @@ private trait Builder {
   /**
     * Executes play at the given intersection with the given color.
     */
-  @inline final def playAt(x: Intersection, color: ProperColor): this.type = {
+  @inline final def playAt(x: Intersection, color: ProperColor)(implicit size: Size): this.type = {
     update(x, color)
     cleanup(x, color)
     this
@@ -35,9 +35,19 @@ private trait Builder {
   protected[this] def update(x: Intersection, color: Color): Unit
 
   /**
+    * Updates all the given intersections to the given colors.
+    */
+  protected[position] def update(updates: TraversableOnce[(Intersection, Color)]): this.type = {
+    for ((x, color) <- updates) {
+      update(x, color)
+    }
+    this
+  }
+
+  /**
     * Removes all stones that died from player 'color' playing at 'x'.
     */
-  private[this] def cleanup(x: Intersection, color: ProperColor) {
+  private[this] def cleanup(x: Intersection, color: ProperColor)(implicit size: Size) {
     assert(apply(x) == color)
     def removeDead(x: Intersection, color: ProperColor)(alive: mutable.Set[Intersection]) {
       val visited = mutable.Set[Intersection]()
