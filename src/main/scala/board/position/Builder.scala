@@ -74,3 +74,10 @@ private trait Builder {
     removeDead(x, color)(Utils.MockSet)
   }
 }
+
+private object Builder {
+
+  def apply(stateDescription: (Int, Int) => Color)(implicit size: Size): Builder = {
+    new DefaultPosition(stateDescription)
+  }
+}

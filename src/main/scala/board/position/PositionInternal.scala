@@ -24,8 +24,6 @@ private trait PositionInternal extends Position {
     case Pass => this
   }
 
-  protected[position] implicit def size: Size
-
   /**
     * @return a builder to build the next position, that starts from the current position
     */

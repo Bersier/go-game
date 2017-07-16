@@ -43,9 +43,15 @@ trait Position extends {
     * @return a 128 bit long hash code for this position
     */
   def toZobristCode: ZCode128
+
+  protected[position] implicit def size: Size
 }
 
 object Position {
   def initial(implicit size: Size): Position = new DefaultPosition()
+
+  def apply(stateDescription: (Int, Int) => Color)(implicit size: Size): Position = {
+    new DefaultPosition(stateDescription)
+  }
 }
 
