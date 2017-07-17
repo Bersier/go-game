@@ -1,6 +1,6 @@
 package board.position
 
-import board.{Color, Intersection, None, ProperColor, Size}
+import board.{Color, Intersection, None, PlayerColor, Size}
 import commons.Utils
 
 import scala.collection.mutable
@@ -13,8 +13,8 @@ private trait Builder {
   /**
     * Executes play at the given intersection with the given color.
     */
-  @inline final def playAt(x: Intersection, color: ProperColor)(implicit size: Size): this.type = {
-    update(x, color)
+  @inline final def playAt(x: Intersection, color: PlayerColor)(implicit size: Size): this.type = {
+    this(x) = color
     cleanup(x, color)
     this
   }
@@ -39,7 +39,7 @@ private trait Builder {
     */
   protected[position] def update(updates: TraversableOnce[(Intersection, Color)]): this.type = {
     for ((x, color) <- updates) {
-      update(x, color)
+      this(x) = color
     }
     this
   }
@@ -47,18 +47,18 @@ private trait Builder {
   /**
     * Removes all stones that died from player 'color' playing at 'x'.
     */
-  private[this] def cleanup(x: Intersection, color: ProperColor)(implicit size: Size) {
+  private[this] def cleanup(x: Intersection, color: PlayerColor)(implicit size: Size) {
     assert(apply(x) == color)
-    def removeDead(x: Intersection, color: ProperColor)(alive: mutable.Set[Intersection]) {
+    def removeDead(x: Intersection, color: PlayerColor)(alive: mutable.Set[Intersection]) {
       val visited = mutable.Set[Intersection]()
-      def isAlive(intersection: Intersection): Boolean = {
-        if (alive(intersection)) true
-        else if (visited(intersection)) false
-        else if (apply(intersection) == None) true
-        else if (apply(intersection) != color) false
+      def isAlive(x: Intersection): Boolean = {
+        if (alive(x)) true
+        else if (visited(x)) false
+        else if (apply(x) == None) true
+        else if (apply(x) != color) false
         else {
-          visited += intersection
-          intersection.neighbors.exists(isAlive)
+          visited += x
+          x.neighbors.exists(isAlive)
         }
       }
 
@@ -66,7 +66,7 @@ private trait Builder {
         alive ++= visited
       } else {
         for (x <- visited) {
-          update(x, None)
+          this(x) = None
         }
       }
     }
@@ -81,6 +81,8 @@ private trait Builder {
 }
 
 private object Builder {
+
+  def initial(implicit size: Size): Builder = apply((_, _) => None)
 
   def apply(stateDescription: (Int, Int) => Color)(implicit size: Size): Builder = {
     new DefaultPosition(stateDescription)

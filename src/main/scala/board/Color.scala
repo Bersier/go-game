@@ -1,6 +1,6 @@
 package board
 
-sealed trait Color {
+sealed trait Color extends Any {
   def dual: Color
   private[board] def toInt: Int
 }
@@ -19,16 +19,16 @@ case object None extends Color {
   override def toInt: Int = 0
 }
 
-sealed trait ProperColor extends Color {
-  override def dual: ProperColor
+sealed trait PlayerColor extends Any with Color {
+  override def dual: PlayerColor
 }
 
-case object Black extends ProperColor {
+case object Black extends PlayerColor {
   override def dual = White
   override def toInt: Int = 1
 }
 
-case object White extends ProperColor {
+case object White extends PlayerColor {
   override def dual = Black
   override def toInt: Int = 2
 }

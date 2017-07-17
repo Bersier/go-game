@@ -1,6 +1,6 @@
 package board.position
 
-import board.{Color, Intersection, None, Size}
+import board.{Color, Intersection, Size}
 import zobristcode.ZCode128
 
 private final class DefaultPosition private(board: Array[Array[Color]],
@@ -12,13 +12,8 @@ private final class DefaultPosition private(board: Array[Array[Color]],
     this(board, zCode._1, zCode._2)
   }
 
-  //noinspection UnnecessaryPartialFunction
-  def this()(implicit size: Size) = {
-    this(Array.fill[Color](size, size)(None), ZobristCoder.get.computeCode{ case _ => None })
-  }
-
-  def this(board: Array[Array[Color]])(implicit size: Size) = {
-    this(board, ZobristCoder.get.computeCode{ (i, j) => board(i)(j) })
+  def this(board: Array[Array[Color]]) = {
+    this(board, ZobristCoder.get.computeCode((i, j) => board(i)(j))(Size(board.length)))
   }
 
   def this(map: (Int, Int) => Color)(implicit size: Size) = this(Array.tabulate(size, size)(map))

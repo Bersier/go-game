@@ -9,7 +9,7 @@ import zobristcode.ZCode128
   *
   * Extend PositionInternal instead of this trait.
   */
-trait Position {
+trait Position extends Any {
 
   /**
     * @return the color at the specified intersection
@@ -28,7 +28,7 @@ trait Position {
     * @param forbidden usually, the previous positions, including the current one
     * @return all the possible next positions, after a non-pass move of the player
     */
-  def nextPositions(player: ProperColor)(implicit forbidden: Set[Position]): Iterator[Position]
+  def nextPositions(player: PlayerColor)(implicit forbidden: Set[Position]): Iterator[Position]
 
   /**
     * Requires that the passed move be legal.
@@ -38,20 +38,30 @@ trait Position {
     * @param prev the positions already seen
     * @return the position resulting from the given move
     */
-  def withMove(move: Move, player: ProperColor)(implicit prev: Set[Position]): Position
+  def withMove(move: Move, player: PlayerColor)(implicit prev: Set[Position]): Position
 
   /**
     * @return a 128 bit long hash code for this position
     */
   def toZobristCode: ZCode128
+
+  /**
+    * @return how many stones of each color are on the board in this position
+    */
+  def count: Color => Int
+
+  /**
+    * @return how much area each player controls
+    */
+  def areas: PlayerColor => Int
 }
 
 object Position {
 
-  def initial(implicit size: Size): Position = new DefaultPosition()
+  def initial(implicit size: Size): Position = Builder.initial.build
 
   def apply(stateDescription: (Int, Int) => Color)(implicit size: Size): Position = {
-    new DefaultPosition(stateDescription)
+    Builder(stateDescription).build
   }
 
   /**
@@ -63,6 +73,15 @@ object Position {
   def intersections(implicit size: Size): Iterator[Intersection] = {
     for (k <- Utils.cheapShuffledRange(size * size).iterator) yield {
       Intersection(k / size, k % size)
+    }
+  }
+
+  /**
+    * @return all the intersections of a board of the given size
+    */
+  def orderedIntersections(implicit size: Size): Iterator[Intersection] = {
+    for (i <- (0 to size).iterator; j <- 0 to size) yield {
+      Intersection(i, j)
     }
   }
 }
