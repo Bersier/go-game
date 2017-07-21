@@ -5,6 +5,7 @@ import java.security.SecureRandom
 import board.Intersection
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
 object Utils {
@@ -141,5 +142,39 @@ object Utils {
   def rotate(n: Int , i: Int): Long = (n >>> i) | (n << (32 - i))
   def rotate(n: Long, i: Int): Long = (n >>> i) | (n << (64 - i))
 
+  /**
+    * @param sequences is required to be non-empty
+    * @param iteratorsLength the minimum length of the iterators in 'sequence'
+    * @return the value corresponding to the 'biggest' iterator
+    */
+  def max[Value](sequences: Iterable[(Iterator[Int], Value)], iteratorsLength: Int): Value = {
+    assert(sequences.nonEmpty)
+    if (sequences.size == 1 || iteratorsLength == 0) sequences.iterator.next._2
+    else max(argsMax(sequences.iterator)(w => w._1.next), iteratorsLength - 1)
+  }
 
+  /**
+    * @param collection is required to be non-empty
+    * @param f maps the elements of the collection to values of a type that can be ordered
+    * @return all the elements in the collection that yield maximal values under f
+    */
+  def argsMax[A, B](collection: Iterator[A])
+                   (f: A => B)(implicit ord: Ordering[B]): IndexedSeq[A] = {
+    val next = collection.next
+    var argMax = ArrayBuffer(next)
+    var max = f(next)
+    for (a <- collection) {
+      val fa = f(a)
+      if (ord.gteq(fa, max)) {
+        if (ord.gt(fa, max)) {
+          argMax = ArrayBuffer(a)
+          max = fa
+        }
+        else {
+          argMax += a
+        }
+      }
+    }
+    argMax
+  }
 }

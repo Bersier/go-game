@@ -48,7 +48,7 @@ private trait PositionInternal extends Position {
     var blackCount = 0
     var whiteCount = 0
     for (x <- Position.orderedIntersections) {
-      this (x) match {
+      this(x) match {
         case None  => noneCount  += 1
         case Black => blackCount += 1
         case White => whiteCount += 1
@@ -61,7 +61,7 @@ private trait PositionInternal extends Position {
     }
   }
 
-  override def areas: PlayerColor => Int = {
+  override def area: PlayerColor => Int = {
     var blackCount = 0
     var whiteCount = 0
     val visited = mutable.Set.empty[Intersection]
@@ -110,17 +110,18 @@ private trait PositionInternal extends Position {
   override def hashCode: Int = toZobristCode._2.toInt
 
   override def toString: String = {
-    val builder = StringBuilder
+    val builder = StringBuilder.newBuilder
     for (i <- 0 until size) {
-      builder + "["
+      builder += '|'
       for (j <- 0 until size) {
-        builder + (this(i, j) match {
-          case Black => "●"
-          case White => "○"
-          case None  => " "
+        builder += (this(i, j) match {
+          case Black => 'B'
+          case White => 'W'
+          case None  => ' '
         })
+        builder += '|'
       }
-      builder + "]"
+      builder += '\n'
     }
     builder.toString
   }

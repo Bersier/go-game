@@ -53,7 +53,7 @@ trait Position extends Any {
   /**
     * @return how much area each player controls
     */
-  def areas: PlayerColor => Int
+  def area: PlayerColor => Int
 }
 
 object Position {
@@ -80,7 +80,7 @@ object Position {
     * @return all the intersections of a board of the given size
     */
   def orderedIntersections(implicit size: Size): Iterator[Intersection] = {
-    for (i <- (0 to size).iterator; j <- 0 to size) yield {
+    for (i <- (0 until size).iterator; j <- 0 until size) yield {
       Intersection(i, j)
     }
   }
