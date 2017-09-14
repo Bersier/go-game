@@ -147,10 +147,36 @@ object Utils {
     * @param iteratorsLength the minimum length of the iterators in 'sequence'
     * @return the value corresponding to the 'biggest' iterator
     */
-  def max[Value](sequences: Iterable[(Iterator[Int], Value)], iteratorsLength: Int): Value = {
-    assert(sequences.nonEmpty)
+  def maxIterator[Value](sequences: Iterable[(Iterator[Int], Value)],
+                         iteratorsLength: Int): Value = {
     if (sequences.size == 1 || iteratorsLength == 0) sequences.iterator.next._2
-    else max(argsMax(sequences.iterator)(w => w._1.next), iteratorsLength - 1)
+    else maxIterator(argsMax(sequences.iterator)(w => w._1.next), iteratorsLength - 1)
+  }
+
+  /**
+    * @param sequences is required to be non-empty
+    * @param sequencesLength the minimum length of the iterators in 'sequence'
+    * @return the value corresponding to the 'biggest' iterator
+    */
+  def max[Value](sequences: Iterable[(IndexedSeq[Int], Value)], sequencesLength: Int): Value = {
+    def maxHelper(sequences: Iterable[(IndexedSeq[Int], Value)], i: Int): Value = {
+      if (sequences.size == 1 || i >= sequencesLength) sequences.iterator.next._2
+      else maxHelper(argsMax(sequences.iterator)(w => w._1(i)), i + 1)
+    }
+    maxHelper(sequences, 0)
+  }
+
+  /**
+    * @param sequences is required to be non-empty
+    * @param sequencesLength the minimum length of the iterators in 'sequence'
+    * @return the value corresponding to the 'biggest' iterator
+    */
+  def max[Value](sequences: (IndexedSeq[Int], Value)*)(sequencesLength: Int): Value = {
+    def maxHelper(sequences: Iterable[(IndexedSeq[Int], Value)], i: Int): Value = {
+      if (sequences.size == 1 || i >= sequencesLength) sequences.iterator.next._2
+      else maxHelper(argsMax(sequences.iterator)(w => w._1(i)), i + 1)
+    }
+    maxHelper(sequences, 0)
   }
 
   /**
@@ -176,5 +202,16 @@ object Utils {
       }
     }
     argMax
+  }
+
+  def permute[Index, Element](container: IndexedContainer[Index, Element])
+                             (bijection: Index => Index): Unit = {
+
+    ???
+  }
+
+  trait IndexedContainer[Index, Element] extends Iterable[Index] {
+    def apply(index: Index): Element
+    def update(index: Index)(element: Element): Unit
   }
 }

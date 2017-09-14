@@ -1,6 +1,6 @@
 package board.position
 
-import board.{Color, Intersection, None, PlayerColor, Size}
+import board.{Color, Dihedral4, Intersection, None, PlayerColor, Size}
 import commons.Utils
 
 import scala.collection.mutable
@@ -24,15 +24,32 @@ private trait Builder {
     */
   def build: Position
 
-  /**
-    * @return the color at 'x'
-    */
-  protected[this] def apply(x: Intersection): Color
+  def buildCanonical(implicit size: Size): Position = {
+    val colorIterators: IndexedSeq[(Iterator[Int], Dihedral4)] =
+      Dihedral4.elements.map(e => (Position.orderedIntersections.map(x => this(e(x)).toInt), e))
+    Utils.maxIterator(colorIterators, size*size)
+    ???
+  }
 
   /**
-    * Sets the color at x.
+    * @return the color at the specified intersection
     */
-  protected[this] def update(x: Intersection, color: Color): Unit
+  protected[this] def apply(i: Int, j: Int): Color = apply(Intersection(i, j))
+
+  /**
+    * @return the color 'x'
+    */
+  protected[this] def apply(x: Intersection): Color = apply(x.i, x.j)
+
+  /**
+    * Sets the color at the specified intersection.
+    */
+  protected[this] def update(i: Int, j: Int, color: Color): Unit = update(Intersection(i, j), color)
+
+  /**
+    * Sets the color at 'x'.
+    */
+  protected[this] def update(x: Intersection, color: Color): Unit = update(x.i, x.j, color)
 
   /**
     * Updates all the given intersections to the given colors.
@@ -42,6 +59,18 @@ private trait Builder {
       this(x) = color
     }
     this
+  }
+
+  private[this] def rotate(implicit size: Size): Unit = {
+    for (i <- 0 until (size + 1) / 2) {
+      for (j <- 0 until size / 2) {
+        val temp = this(i, j)
+        this(i, j) = this(j, size - 1 - i)
+        this(j, size - 1 - i) = this(size - 1 - i, size - 1 - j)
+        this(size - 1 - i, size - 1 - j) = this(size - 1 - j, i)
+        this(size - 1 - j, i) = temp
+      }
+    }
   }
 
   /**

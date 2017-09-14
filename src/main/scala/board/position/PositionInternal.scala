@@ -1,6 +1,7 @@
 package board.position
 
-import board.{Black, Color, Intersection, Move, None, Pass, PlayerColor, Size, White}
+import board.{Black, Color, Dihedral4, Intersection, Move, None, Pass, PlayerColor, Size, White}
+import commons.Utils
 import zobristcode.ZCode128
 
 import scala.collection.mutable
@@ -102,6 +103,47 @@ private trait PositionInternal extends Position {
     }
   }
 
+  def canonical: Position = {
+    val id = new ToIntSeq {
+      def getI(index: Int): Int = index / boardSize
+      def getJ(index: Int): Int = index % boardSize
+    }
+    val verticalFlip = new ToIntSeq {
+      def getI(index: Int): Int = index / boardSize
+      def getJ(index: Int): Int = boardSize - 1 - index % boardSize
+    }
+    val horizontalFlip = new ToIntSeq {
+      def getI(index: Int): Int = boardSize - 1 - index / boardSize
+      def getJ(index: Int): Int = index % boardSize
+    }
+    val transposeFlip = new ToIntSeq {
+      def getI(index: Int): Int = index % boardSize
+      def getJ(index: Int): Int = index / boardSize
+    }
+    val oppositeFlip = new ToIntSeq {
+      def getI(index: Int): Int = boardSize - 1 - index % boardSize
+      def getJ(index: Int): Int = boardSize - 1 - index / boardSize
+    }
+    val rotation1 = new ToIntSeq {
+      def getI(index: Int): Int = index % boardSize
+      def getJ(index: Int): Int = boardSize - 1 - index / boardSize
+    }
+    val rotation2 = new ToIntSeq {
+      def getI(index: Int): Int = boardSize - 1 - index / boardSize
+      def getJ(index: Int): Int = boardSize - 1 - index % boardSize
+    }
+    val rotation3 = new ToIntSeq {
+      def getI(index: Int): Int = boardSize - 1 - index % boardSize
+      def getJ(index: Int): Int = index / boardSize
+    }
+    //Utils.max(Iterable(id, verticalFlip))
+    ???
+  }
+
+  def rotoflect(dihedral: Dihedral4): Position = {
+    Position((i, j) => this(dihedral(i, j)))
+  }
+
   override def equals(other: Any): Boolean = other match {
     case that: Position => this.toZobristCode == that.toZobristCode
     case _ => false
@@ -124,5 +166,19 @@ private trait PositionInternal extends Position {
       builder += '\n'
     }
     builder.toString
+  }
+
+  private[this] trait ToIntSeq extends IndexedSeq[Int] {
+    final protected def boardSize: Int = PositionInternal.this.size
+
+    protected[this] def getI(index: Int): Int
+
+    protected[this] def getJ(index: Int): Int
+
+    final override def length: Int = boardSize * boardSize
+
+    final override def apply(index: Int): Int = {
+      PositionInternal.this(getI(index), getJ(index)).toInt
+    }
   }
 }

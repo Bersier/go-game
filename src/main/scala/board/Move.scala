@@ -48,5 +48,11 @@ object Intersection {
     new Intersection(j + (i << shift))
   }
 
+  def apply(ij: (Int, Int)): Intersection = {
+    assert(ij._1 >= 0)
+    assert(ij._2 >= 0)
+    new Intersection(ij._2 + (ij._1 << shift))
+  }
+
   def unapply(x: Intersection): Option[(Int, Int)] = Some((x.i, x.j))
 }

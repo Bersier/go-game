@@ -6,7 +6,7 @@ import scala.collection.mutable.ArrayBuffer
 object MagicSquare extends App {
 
   val stepSize = 100000
-  var bound = 6600000
+  var bound = 9000000
   while (true) {
     findCandidates(bound, bound + stepSize)
     bound += stepSize
@@ -34,9 +34,9 @@ object MagicSquare extends App {
       }
     }
     println("map.size = " + map.size)
-    val c2 = map.values.map { loop }.filter(_.size >= 8)
+    val c2 = map.values.flatMap(loop)
     println("c2.size = " + c2.size)
-    val c3 = c2.filter(cruxFilter)
+    val c3 = c2.filter(countFilter)
     println("c3.size = " + c3.size)
     for (arrays <- c3) {
       val sum = arrays(0).map(i => i*i).sum
@@ -70,39 +70,12 @@ object MagicSquare extends App {
                             println(s"|$topLeft|$topCenter|$topRight")
                             println(s"|$middleLeft|$crux|$middleRight")
                             println(s"|$bottomLeft|$bottomCenter|$bottomRight\n")
-                            System.exit(0)
                           }
                         }
                       }
                     }
                   }
                 }
-//                val possibleCenterColumns = arrays
-//                  .filter(_ contains crux)
-//                  .filterNot(_ contains bottomRight)
-//                for (centerColumn <- possibleCenterColumns.filter(_ contains topCenter)) {
-//                  val bottomCenter = centerColumn.filterNot(_ == crux).filterNot(_ == topCenter)(0)
-//                  val topRight = topRowExceptLeft.filterNot(_ == topCenter)(0)
-//                  val middleRight2 = sum - topRight*topRight - bottomRight*bottomRight
-//                  val middleRight = math.sqrt(middleRight2).toInt
-//                  if (middleRight*middleRight == middleRight2) {
-//                    val middleLeft2 = sum - crux*crux - middleRight2
-//                    val middleLeft = math.sqrt(middleLeft2).toInt
-//                    if (middleLeft*middleLeft == middleLeft2) {
-//                      val bottomLeft2 = sum - bottomCenter*bottomCenter - bottomRight*bottomRight
-//                      val bottomLeft = math.sqrt(bottomLeft2).toInt
-//                      if (bottomLeft*bottomLeft == bottomLeft2) {
-//                        if (topLeft*topLeft + middleLeft2 + bottomLeft2 == sum &&
-//                            bottomLeft2 + crux*crux + topRight*topRight == sum) {
-//                          println(s"|$topLeft|$topCenter|$topRight")
-//                          println(s"|$middleLeft|$crux|$middleRight")
-//                          println(s"|$bottomLeft|$bottomCenter|$bottomRight\n")
-//                          System.exit(0)
-//                        }
-//                      }
-//                    }
-//                  }
-//                }
               }
             }
           }
@@ -118,18 +91,19 @@ object MagicSquare extends App {
     else None
   }
 
-  def cruxFilter(arrays: IndexedSeq[Array[Int]]): Boolean = {
-    getICount(arrays).values.exists(_ >= 4)
+  def countFilter(arrays: IndexedSeq[Array[Int]]): Boolean = {
+    val counts = getICount(arrays).values
+    counts.count(_ >= 3) >= 5 && counts.exists(_ >= 4)
   }
 
-  def loop(arrays: IndexedSeq[Array[Int]]): IndexedSeq[Array[Int]] = {
-    val iCount = getICount(arrays)
-    val nextArrays = arrays.filter {
-      array => array.forall { i => iCount(i) >= 2 }
+  def loop(arrays: IndexedSeq[Array[Int]]): Option[IndexedSeq[Array[Int]]] = {
+    if (arrays.size < 8) None
+    else {
+      val iCount = getICount(arrays)
+      val nextArrays = arrays.filter(array => array.forall { i => iCount(i) >= 2 })
+      if (nextArrays.size == arrays.size) Some(nextArrays)
+      else loop(nextArrays)
     }
-    if (nextArrays.size < 8) nextArrays
-    else if (nextArrays.size == arrays.size) nextArrays
-    else loop(nextArrays)
   }
 
   private def getICount(arrays: IndexedSeq[Array[Int]]) = {
