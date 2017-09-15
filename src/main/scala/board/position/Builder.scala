@@ -1,6 +1,6 @@
 package board.position
 
-import board.{Color, Dihedral4, Intersection, None, PlayerColor, Size}
+import board.{Color, Dihedral4, HorizontalFlip, Identity, Intersection, None, OppositeFlip, PlayerColor, Rotation1, Rotation2, Rotation3, Size, TransposeFlip, VerticalFlip}
 import commons.Utils
 
 import scala.collection.mutable
@@ -27,29 +27,34 @@ private trait Builder {
   def buildCanonical(implicit size: Size): Position = {
     val colorIterators: IndexedSeq[(Iterator[Int], Dihedral4)] =
       Dihedral4.elements.map(e => (Position.orderedIntersections.map(x => this(e(x)).toInt), e))
-    Utils.maxIterator(colorIterators, size*size)
-    ???
+    val element = Utils.maxIterator(colorIterators, size*size)
+
+    if (element == Identity) this.build
+    else Position((i, j) => this(element(i, j)))
   }
 
-  /**
-    * @return the color at the specified intersection
-    */
-  protected[this] def apply(i: Int, j: Int): Color = apply(Intersection(i, j))
+  def canonify(implicit size: Size): Unit = {
+    val colorIterators: IndexedSeq[(Iterator[Int], Dihedral4)] =
+      Dihedral4.elements.map(e => (Position.orderedIntersections.map(x => this(e(x)).toInt), e))
+    val element = Utils.maxIterator(colorIterators, size*size)
+
+    if (element != Identity) {
+      val copy = this.build
+      for (x <- Position.orderedIntersections) {
+        this(x) = copy(element(x))
+      }
+    }
+  }
 
   /**
     * @return the color 'x'
     */
-  protected[this] def apply(x: Intersection): Color = apply(x.i, x.j)
-
-  /**
-    * Sets the color at the specified intersection.
-    */
-  protected[this] def update(i: Int, j: Int, color: Color): Unit = update(Intersection(i, j), color)
+  protected def apply(x: Intersection): Color
 
   /**
     * Sets the color at 'x'.
     */
-  protected[this] def update(x: Intersection, color: Color): Unit = update(x.i, x.j, color)
+  protected def update(x: Intersection, color: Color): Unit
 
   /**
     * Updates all the given intersections to the given colors.
@@ -61,16 +66,82 @@ private trait Builder {
     this
   }
 
-  private[this] def rotate(implicit size: Size): Unit = {
-    for (i <- 0 until (size + 1) / 2) {
+  private[this] def rotate1(implicit size: Size): Unit = {
+    for (i <- 0 until (1 + size) / 2) {
       for (j <- 0 until size / 2) {
-        val temp = this(i, j)
-        this(i, j) = this(j, size - 1 - i)
-        this(j, size - 1 - i) = this(size - 1 - i, size - 1 - j)
-        this(size - 1 - i, size - 1 - j) = this(size - 1 - j, i)
-        this(size - 1 - j, i) = temp
+        val x0 = Intersection(i, j)
+        val x1 = Rotation1(x0)
+        val x2 = Rotation2(x0)
+        val x3 = Rotation3(x0)
+
+        val temp = this(x0)
+        this(x0) = this(x1)
+        this(x1) = this(x2)
+        this(x2) = this(x3)
+        this(x3) = temp
       }
     }
+  }
+
+  private[this] def rotate2(implicit size: Size): Unit = {
+    for (index <- 0 until size * size / 2) {
+      swap(Intersection.fromIndex(index), Rotation2(Intersection.fromIndex(index)))
+    }
+  }
+
+  private[this] def rotate3(implicit size: Size): Unit = {
+    for (i <- 0 until (1 + size) / 2) {
+      for (j <- 0 until size / 2) {
+        val x0 = Intersection(i, j)
+        val x1 = Rotation1(x0)
+        val x2 = Rotation2(x0)
+        val x3 = Rotation3(x0)
+
+        val temp = this(x0)
+        this(x0) = this(x3)
+        this(x3) = this(x2)
+        this(x2) = this(x1)
+        this(x1) = temp
+      }
+    }
+  }
+
+  private[this] def verticalFlip(implicit size: Size): Unit = {
+    for (i <- 0 until size / 2) {
+      for (j <- 0 until size) {
+        swap(Intersection(i, j), VerticalFlip(Intersection(i, j)))
+      }
+    }
+  }
+
+  private[this] def horizontalFlip(implicit size: Size): Unit = {
+    for (i <- 0 until size) {
+      for (j <- 0 until size / 2) {
+        swap(Intersection(i, j), HorizontalFlip(Intersection(i, j)))
+      }
+    }
+  }
+
+  private[this] def transposeFlip(implicit size: Size): Unit = {
+    for (i <- 0 until size) {
+      for (j <- 0 until i) {
+        swap(Intersection(i, j), TransposeFlip(Intersection(i, j)))
+      }
+    }
+  }
+
+  private[this] def oppositeFlip(implicit size: Size): Unit = {
+    for (i <- 0 until size) {
+      for (j <- 0 until size - 1 - i) {
+        swap(Intersection(i, j), OppositeFlip(Intersection(i, j)))
+      }
+    }
+  }
+
+  private[this] def swap(x1: Intersection, x2: Intersection): Unit = {
+    val temp = this(x1)
+    this(x1) = this(x2)
+    this(x2) = temp
   }
 
   /**

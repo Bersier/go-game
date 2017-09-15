@@ -48,6 +48,12 @@ object Intersection {
     new Intersection(j + (i << shift))
   }
 
+  def fromIndex(index: Int)(implicit size: Size): Intersection = {
+    assert(index >= 0)
+    assert(index <= size*size)
+    new Intersection(index % size + (index / size << shift))
+  }
+
   def apply(ij: (Int, Int)): Intersection = {
     assert(ij._1 >= 0)
     assert(ij._2 >= 0)

@@ -103,45 +103,8 @@ private trait PositionInternal extends Position {
     }
   }
 
-  def canonical: Position = {
-    val id = new ToIntSeq {
-      def getI(index: Int): Int = index / boardSize
-      def getJ(index: Int): Int = index % boardSize
-    }
-    val verticalFlip = new ToIntSeq {
-      def getI(index: Int): Int = index / boardSize
-      def getJ(index: Int): Int = boardSize - 1 - index % boardSize
-    }
-    val horizontalFlip = new ToIntSeq {
-      def getI(index: Int): Int = boardSize - 1 - index / boardSize
-      def getJ(index: Int): Int = index % boardSize
-    }
-    val transposeFlip = new ToIntSeq {
-      def getI(index: Int): Int = index % boardSize
-      def getJ(index: Int): Int = index / boardSize
-    }
-    val oppositeFlip = new ToIntSeq {
-      def getI(index: Int): Int = boardSize - 1 - index % boardSize
-      def getJ(index: Int): Int = boardSize - 1 - index / boardSize
-    }
-    val rotation1 = new ToIntSeq {
-      def getI(index: Int): Int = index % boardSize
-      def getJ(index: Int): Int = boardSize - 1 - index / boardSize
-    }
-    val rotation2 = new ToIntSeq {
-      def getI(index: Int): Int = boardSize - 1 - index / boardSize
-      def getJ(index: Int): Int = boardSize - 1 - index % boardSize
-    }
-    val rotation3 = new ToIntSeq {
-      def getI(index: Int): Int = boardSize - 1 - index % boardSize
-      def getJ(index: Int): Int = index / boardSize
-    }
-    //Utils.max(Iterable(id, verticalFlip))
-    ???
-  }
-
-  def rotoflect(dihedral: Dihedral4): Position = {
-    Position((i, j) => this(dihedral(i, j)))
+  override def after(transformation: Dihedral4): Position = {
+    Position((i, j) => this(transformation(i, j)))
   }
 
   override def equals(other: Any): Boolean = other match {

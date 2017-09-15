@@ -1,34 +1,76 @@
 package board
 
-import board.position.Position
+sealed trait Dihedral4 {
 
-final class Dihedral4 private(private val value: Int) extends AnyVal {
-
-  def apply(i: Int, j: Int)(implicit size: Size): Intersection = {
-    var ni = i
-    var nj = j
-    if ((value >> 1 & 1) == 1) {
-      ni = size - 1 - ni
-    }
-    if ((value >> 2 & 1) == 1) {
-      nj = size - 1 - nj
-    }
-    if ((value & 1) == 0) Intersection(ni, nj)
-    else Intersection(nj, ni)
-  }
+  def apply(i: Int, j: Int)(implicit size: Size): Intersection
 
   def apply(x: Intersection)(implicit size: Size): Intersection = apply(x.i, x.j)
+
+  def inverse: Dihedral4
+}
+
+sealed trait Dihedral4Involution extends Dihedral4 {
+  final override def inverse: this.type = this
+}
+
+case object Identity extends Dihedral4 {
+
+  override def apply(i: Int, j: Int)
+                    (implicit size: Size): Intersection = Intersection(i, j)
+
+  override def inverse: Dihedral4 = Identity
+}
+
+case object Rotation1 extends Dihedral4 {
+
+  override def apply(i: Int, j: Int)
+                    (implicit size: Size): Intersection = Intersection(j, size - 1 - i)
+
+  override def inverse: Dihedral4 = Rotation3
+}
+
+case object Rotation2  extends Dihedral4Involution {
+
+  override def apply(i: Int, j: Int)
+           (implicit size: Size): Intersection = Intersection(size - 1 - i, size - 1 - j)
+}
+
+case object Rotation3  extends Dihedral4 {
+
+  override def apply(i: Int, j: Int)
+                    (implicit size: Size): Intersection = Intersection(size - 1 - j, i)
+
+  override def inverse: Dihedral4 = Rotation1
+}
+
+case object VerticalFlip  extends Dihedral4Involution {
+
+  override def apply(i: Int, j: Int)
+                    (implicit size: Size): Intersection = Intersection(size - 1 - i, j)
+}
+
+case object HorizontalFlip  extends Dihedral4Involution {
+
+  override def apply(i: Int, j: Int)
+                    (implicit size: Size): Intersection = Intersection(i, size - 1 - j)
+}
+
+case object TransposeFlip  extends Dihedral4Involution {
+
+  override def apply(i: Int, j: Int)
+                    (implicit size: Size): Intersection = Intersection(j, i)
+}
+
+case object OppositeFlip  extends Dihedral4Involution {
+
+  override def apply(i: Int, j: Int)
+                    (implicit size: Size): Intersection = Intersection(size - 1 - j, size - 1 - i)
 }
 
 object Dihedral4 {
 
-  def elements: IndexedSeq[Dihedral4] = new IndexedSeq[Dihedral4] {
-    override def length: Int = 8
-
-    override def apply(index: Int): Dihedral4 = {
-      assert(index >= 0)
-      assert(index < 8)
-      new Dihedral4(index)
-    }
-  }
+  val elements: IndexedSeq[Dihedral4] = Array(
+    Identity, Rotation1, Rotation2, Rotation3, VerticalFlip, HorizontalFlip, TransposeFlip,
+    OppositeFlip
+  )
 }

@@ -41,6 +41,12 @@ trait Position extends Any {
   def withMove(move: Move, player: PlayerColor)(implicit prev: Set[Position]): Position
 
   /**
+    * @return an equivalent position to this one, but rotated or reflected according to the given
+    *         transformation
+    */
+  def after(transformation: Dihedral4): Position
+
+  /**
     * @return a 128 bit long hash code for this position
     */
   def toZobristCode: ZCode128
