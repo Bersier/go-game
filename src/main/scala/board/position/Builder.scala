@@ -2,13 +2,14 @@ package board.position
 
 import board.{Color, Dihedral4, HorizontalFlip, Identity, Intersection, None, OppositeFlip, PlayerColor, Rotation1, Rotation2, Rotation3, Size, TransposeFlip, VerticalFlip}
 import commons.Utils
+import zobristcode.ZCode128
 
 import scala.collection.mutable
 
 /**
   * Position builder.
   */
-protected trait Builder[P <: Position] {
+protected trait Builder[P <: Position] extends AbstractPosition {
 
   /**
     * Executes play at the given intersection with the given color. The current color at 'x' is
@@ -33,14 +34,22 @@ protected trait Builder[P <: Position] {
   }
 
   /**
-    * @return the color 'x'
-    */
-  protected def apply(x: Intersection): Color
-
-  /**
     * Sets the color at 'x'.
     */
-  protected def update(x: Intersection, color: Color): Unit
+  protected def update(x: Intersection, color: Color): Unit = {
+    updateZCode(x, this(x), color)
+    updateRaw(x, color)
+  }
+
+  protected[this] def updateRaw(x: Intersection, color: Color): Unit
+
+  protected[this] def updateZCode(x: Intersection, oldColor: Color, newColor: Color): Unit
+
+  protected[this] def updateZCode(zCode128: ZCode128): Unit
+
+  private[this] def updateZCode(implicit size: Size): Unit = {
+    updateZCode(ZobristCoder.get.computeCode((i, j) => this(i, j)))
+  }
 
   /**
     * Updates all the given intersections to the given colors.
@@ -52,15 +61,18 @@ protected trait Builder[P <: Position] {
     this
   }
 
-  protected[this] def rotoflect(element: Dihedral4)(implicit size: Size): Unit = element match {
-    case Identity => ()
-    case Rotation1 => rotate1
-    case Rotation2 => rotate2
-    case Rotation3 => rotate3
-    case VerticalFlip => verticalFlip
-    case HorizontalFlip => horizontalFlip
-    case TransposeFlip => transposeFlip
-    case OppositeFlip => oppositeFlip
+  protected[this] def rotoflect(element: Dihedral4)(implicit size: Size): Unit = {
+    element match {
+      case Identity => ()
+      case Rotation1 => rotate1
+      case Rotation2 => rotate2
+      case Rotation3 => rotate3
+      case VerticalFlip => verticalFlip
+      case HorizontalFlip => horizontalFlip
+      case TransposeFlip => transposeFlip
+      case OppositeFlip => oppositeFlip
+    }
+    updateZCode
   }
 
   protected[this] def rotate1(implicit size: Size): Unit = {
@@ -72,10 +84,10 @@ protected trait Builder[P <: Position] {
         val x3 = Rotation3(x0)
 
         val temp = this(x0)
-        this(x0) = this(x1)
-        this(x1) = this(x2)
-        this(x2) = this(x3)
-        this(x3) = temp
+        updateRaw(x0, this(x1))
+        updateRaw(x1, this(x2))
+        updateRaw(x2, this(x3))
+        updateRaw(x3, temp)
       }
     }
   }
@@ -95,10 +107,10 @@ protected trait Builder[P <: Position] {
         val x3 = Rotation3(x0)
 
         val temp = this(x0)
-        this(x0) = this(x3)
-        this(x3) = this(x2)
-        this(x2) = this(x1)
-        this(x1) = temp
+        updateRaw(x0, this(x3))
+        updateRaw(x3, this(x2))
+        updateRaw(x2, this(x1))
+        updateRaw(x1, temp)
       }
     }
   }
@@ -137,8 +149,8 @@ protected trait Builder[P <: Position] {
 
   private[this] def swap(x1: Intersection, x2: Intersection): Unit = {
     val temp = this(x1)
-    this(x1) = this(x2)
-    this(x2) = temp
+    updateRaw(x1, this(x2))
+    updateRaw(x2, temp)
   }
 
   /**
@@ -182,6 +194,6 @@ private object Builder {
   def initial(implicit size: Size): Builder[Position] = apply((_, _) => None)
 
   def apply(stateDescription: (Int, Int) => Color)(implicit size: Size): Builder[Position] = {
-    new DefaultPosition(stateDescription)
+    new EfficientPosition(stateDescription)
   }
 }

@@ -1,6 +1,7 @@
 package board.position
 import board.{Color, Intersection}
 import commons.Utils
+import zobristcode.ZCode128
 
 import scala.collection.mutable
 
@@ -25,12 +26,17 @@ private class TinyBuilder(reference: PositionInternal[Position]) extends Builder
       }
       new TinyPosition(reference, updatesLong)
     }
-    else new DefaultPosition(reference).update(updates.toIterator).build
+    else new EfficientPosition(reference)(reference.size).update(updates.toIterator).build
   }
 
-  override protected[this] def apply(x: Intersection): Color = updates.getOrElse(x, reference(x))
+  override def apply(x: Intersection): Color = updates.getOrElse(x, reference(x))
 
-  override protected[this] def update(x: Intersection, color: Color): Unit = {
+  override protected[this] def updateRaw(x: Intersection, color: Color): Unit = {
     updates(x) = color
   }
+
+  override protected[this]
+  def updateZCode(x: Intersection, oldColor: Color, newColor: Color): Unit = {}
+
+  override protected[this] def updateZCode(zCode128: ZCode128): Unit = {}
 }

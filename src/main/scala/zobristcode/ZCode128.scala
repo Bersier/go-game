@@ -19,4 +19,6 @@ trait ZCode128 {
 
 object ZCode128 {
   def apply(l1: Long, l2: Long): ZCode128 = new ZCode128Impl(l1, l2)
+
+  def unapply(code: ZCode128): Option[(Long, Long)] = Some((code._1, code._2))
 }

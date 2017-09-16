@@ -18,8 +18,14 @@ class ZCodeCacher(protected[this] var zCode1: Long, protected[this] var zCode2: 
 
   protected[this] def updateRaw(x: Intersection, color: Color): Unit
 
-  private[this] def updateZCode(x: Intersection, oldColor: Color, newColor: Color): Unit = {
+  protected[this] override
+  def updateZCode(x: Intersection, oldColor: Color, newColor: Color): Unit = {
     zCode1 ^= ZobristCoder.get.code1(x, oldColor) ^ ZobristCoder.get.code1(x, newColor)
     zCode2 ^= ZobristCoder.get.code2(x, oldColor) ^ ZobristCoder.get.code2(x, newColor)
+  }
+
+  protected[this] override def updateZCode(code: ZCode128): Unit = {
+    zCode1 = code._1
+    zCode2 = code._2
   }
 }

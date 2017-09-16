@@ -10,17 +10,7 @@ import zobristcode.ZCode128
   *
   * Extend PositionInternal instead of this trait.
   */
-trait Position extends Any {
-
-  /**
-    * @return the color at the specified intersection
-    */
-  def apply(i: Int, j: Int): Color = apply(Intersection(i, j))
-
-  /**
-    * @return the color at the given intersection
-    */
-  def apply(x: Intersection): Color = apply(x.i, x.j)
+trait Position extends AbstractPosition {
 
   /**
     * The order of the returned positions is randomized (but not uniformly over all permutations).
