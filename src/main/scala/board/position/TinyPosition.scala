@@ -4,10 +4,10 @@ import board.{Color, Intersection, Size}
 import commons.Utils
 import zobristcode.ZCode128
 
-private final
-class TinyPosition(reference: PositionInternal, updates: Long) extends PositionInternal {
+private final class TinyPosition(reference: PositionInternal[Position], updates: Long)
+  extends PositionInternal[Position] {
 
-  override protected[this] def nextPositionBuilder: Builder = {
+  override protected[this] def nextPositionBuilder: Builder[Position] = {
     new TinyBuilder(reference).update(updatedIntersections)
   }
 

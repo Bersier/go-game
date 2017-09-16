@@ -1,6 +1,7 @@
 package board.position
 
 import board._
+import collection.Set
 import commons.Utils
 import zobristcode.ZCode128
 
@@ -28,19 +29,7 @@ trait Position extends Any {
     * @param forbidden usually, the previous positions, including the current one
     * @return all the possible next positions, after a non-pass move of the player
     */
-  def nextPositions(player: PlayerColor)(implicit forbidden: Set[Position]): Iterator[Position]
-
-  /**
-    * The order of the returned positions is randomized (but not uniformly over all permutations).
-    *
-    * @param player for which the next positions shall be returned
-    * @param forbiddenCanonical usually, the previous positions, including the current one; should
-    *                           be given in canonical form
-    * @return all the possible next positions, up to isomorphism, after a non-pass move of the
-    *         player
-    */
-  def nextCanonicalPositions(player: PlayerColor)
-                            (implicit forbiddenCanonical: Set[Position]): Iterator[Position]
+  def nextPositions(player: PlayerColor)(implicit forbidden: Set[ZCode128]): Iterator[Position]
 
   /**
     * Requires that the passed move be legal.
@@ -50,13 +39,7 @@ trait Position extends Any {
     * @param prev the positions already seen
     * @return the position resulting from the given move
     */
-  def withMove(move: Move, player: PlayerColor)(implicit prev: Set[Position]): Position
-
-  /**
-    * @return an equivalent position to this one, but rotated or reflected according to the given
-    *         transformation
-    */
-  def after(transformation: Dihedral4): Position
+  def withMove(move: Move, player: PlayerColor)(implicit prev: Set[ZCode128]): Position
 
   /**
     * @return a 128 bit long hash code for this position

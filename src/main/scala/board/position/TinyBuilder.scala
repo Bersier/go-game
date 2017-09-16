@@ -4,7 +4,7 @@ import commons.Utils
 
 import scala.collection.mutable
 
-private class TinyBuilder(reference: PositionInternal) extends Builder {
+private class TinyBuilder(reference: PositionInternal[Position]) extends Builder[Position] {
 
   private[this] val updates = mutable.Map.empty[Intersection, Color]
 

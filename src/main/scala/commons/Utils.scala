@@ -12,19 +12,21 @@ object Utils {
 
   val secureRandom = new SecureRandom
 
-  object MockSet extends mutable.Set[Intersection] {
+  def mockSet[T]: mutable.Set[T] = MockSet.asInstanceOf[mutable.Set[T]]
 
-    override def +=(elem: Intersection): MockSet.type = this
+  private object MockSet extends mutable.Set[Any] {
 
-    override def -=(elem: Intersection): MockSet.type = this
+    override def +=(elem: Any): MockSet.type = this
 
-    override def contains(elem: Intersection) = false
+    override def -=(elem: Any): MockSet.type = this
+
+    override def contains(elem: Any) = false
 
     override def iterator = Iterator()
 
-    override def ++=(xs: TraversableOnce[Intersection]): MockSet.type = this
+    override def ++=(xs: TraversableOnce[Any]): MockSet.type = this
 
-    override def --=(xs: TraversableOnce[Intersection]): MockSet.type = this
+    override def --=(xs: TraversableOnce[Any]): MockSet.type = this
   }
 
   def shuffledRange(n: Short): Array[Short] = {

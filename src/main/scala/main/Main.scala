@@ -2,25 +2,26 @@ package main
 
 import board.{Black, Size, White}
 import board.position.Position
+import zobristcode.ZCode128
 
 import scala.collection.mutable
 
 object Main extends App {
 
-  type Positions = mutable.Set[Position]
+  type Positions = mutable.Set[ZCode128]
 
   for (i <- 1 until 20) {
     println(i + ": " + komi(Size(i)))
   }
 
   def komi(implicit size: Size): Int = {
-    komiBlack(Int.MinValue, Int.MaxValue)(Position.initial, mutable.Set.empty[Position], size)
+    komiBlack(Int.MinValue, Int.MaxValue)(Position.initial, mutable.Set.empty[ZCode128], size)
   }
 
   private
   def komiBlack(min: Int, max: Int)
                (implicit position: Position, prev: Positions, size: Size): Int = withUpdatedPrev {
-    val nextPositions = position.nextPositions(Black)(prev.toSet)
+    val nextPositions = position.nextPositions(Black)(prev)
     if (nextPositions.isEmpty) countDiff(position)
     else {
       def loop(min: Int): Int = {
@@ -37,7 +38,7 @@ object Main extends App {
   private
   def komiWhite(min: Int, max: Int)
                (implicit position: Position, prev: Positions, size: Size): Int = withUpdatedPrev {
-    val nextPositions = position.nextPositions(White)(prev.toSet)
+    val nextPositions = position.nextPositions(White)(prev)
     if (nextPositions.isEmpty) countDiff(position)
     else {
       def loop(max: Int): Int = {
@@ -59,14 +60,14 @@ object Main extends App {
 
   private
   def withUpdatedPrev[A](getA: => A)(implicit position: Position, prev: Positions): A = {
-    prev += position
+    prev += position.toZobristCode
     if (maxPrevCount < prev.size) {
 //      print(position)
       maxPrevCount = prev.size
       println(s"maxPrevCount = $maxPrevCount\n")
     }
     val a = getA
-    prev -= position
+    prev -= position.toZobristCode
     a
   }
 }

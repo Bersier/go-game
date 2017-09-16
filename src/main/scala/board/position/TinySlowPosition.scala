@@ -6,10 +6,10 @@ import main.Config
 import zobristcode.ZCode128
 
 private final
-class TinySlowPosition private(reference: PositionInternal, updates: Long)
-  extends PositionInternal {
+class TinySlowPosition private(reference: PositionInternal[Position], updates: Long)
+  extends PositionInternal[Position] {
 
-  override protected[this] def nextPositionBuilder: Builder = Builder(apply: (Int, Int) => Color)
+  override protected[this] def nextPositionBuilder: Builder[Position] = Builder(apply: (Int, Int) => Color)
 
   override def apply(x: Intersection): Color = {
     TinySlowPosition.moveEncoder.decode(updates).getOrElse(x, reference(x))

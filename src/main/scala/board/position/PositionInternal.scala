@@ -1,30 +1,25 @@
 package board.position
 
-import board.{Black, Color, Dihedral4, Intersection, Move, None, Pass, PlayerColor, Size, White}
+import board.{Black, Color, Intersection, Move, None, Pass, PlayerColor, Size, White}
 import zobristcode.ZCode128
 
-import scala.collection.mutable
+import scala.collection.{Set, mutable}
 
-private trait PositionInternal extends Position {
+protected trait PositionInternal[P <: Position] extends Position {
+  this: P =>
 
   final override
-  def nextPositions(player: PlayerColor)(implicit forbidden: Set[Position]): Iterator[Position] = {
+  def nextPositions(player: PlayerColor)(implicit forbidden: Set[ZCode128]): Iterator[P] = {
     for (x <- Position.intersections; n <- withMove(x, player)) yield n
   }
 
-  def nextCanonicalPositions(player: PlayerColor)
-                            (implicit forbiddenCanonical: Set[Position]): Iterator[Position] = {
-    ???
-  }
-
   final override
-  def withMove(move: Move, player: PlayerColor)
-              (implicit prev: Set[Position]): Position = move match {
+  def withMove(move: Move, player: PlayerColor)(implicit prev: Set[ZCode128]): P = move match {
     case x: Intersection => {
       require(apply(x) == None, s"Illegal move: $x is already occupied")
-      require(prev(this), "'previous' should contain the current position")
-      val result = nextPositionBuilder.playAt(x, player).build
-      require(!prev(result), s"Illegal move: results in a previous position: $result")
+      require(prev(this.toZobristCode), "'previous' should contain the current position")
+      val result: P = nextPositionBuilder.playAt(x, player).build
+      require(!prev(result.toZobristCode), s"Illegal move: results in a previous position: $result")
       result
     }
     case Pass => this
@@ -38,11 +33,13 @@ private trait PositionInternal extends Position {
   /**
     * @return a builder to build the next position, that starts from the current position
     */
-  protected[this] def nextPositionBuilder: Builder
+  protected[this] def nextPositionBuilder: Builder[P]
 
   private[this] def withMove(x: Intersection, color: PlayerColor)
-                            (implicit forbidden: Set[Position]): Option[Position] = this(x) match {
-    case None => Some(nextPositionBuilder.playAt(x, color).build).filterNot(forbidden)
+                            (implicit forbidden: Set[ZCode128]): Option[P] = this(x) match {
+    case None => Some(
+      nextPositionBuilder.playAt(x, color).build).filterNot(p => forbidden(p.toZobristCode)
+    )
     case _ => Option.empty
   }
 
@@ -107,10 +104,6 @@ private trait PositionInternal extends Position {
     }
   }
 
-  override def after(transformation: Dihedral4): Position = {
-    Position((i, j) => this(transformation(i, j)))
-  }
-
   override def equals(other: Any): Boolean = other match {
     case that: Position => this.toZobristCode == that.toZobristCode
     case _ => false
@@ -133,19 +126,5 @@ private trait PositionInternal extends Position {
       builder += '\n'
     }
     builder.toString
-  }
-
-  private[this] trait ToIntSeq extends IndexedSeq[Int] {
-    final protected def boardSize: Int = PositionInternal.this.size
-
-    protected[this] def getI(index: Int): Int
-
-    protected[this] def getJ(index: Int): Int
-
-    final override def length: Int = boardSize * boardSize
-
-    final override def apply(index: Int): Int = {
-      PositionInternal.this(getI(index), getJ(index)).toInt
-    }
   }
 }

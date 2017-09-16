@@ -24,11 +24,11 @@ sealed trait PlayerColor extends Any with Color {
 }
 
 case object Black extends PlayerColor {
-  override def dual = White
+  override def dual: White.type = White
   override def toInt: Int = 1
 }
 
 case object White extends PlayerColor {
-  override def dual = Black
+  override def dual: Black.type = Black
   override def toInt: Int = 2
 }

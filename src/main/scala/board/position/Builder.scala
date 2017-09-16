@@ -8,7 +8,7 @@ import scala.collection.mutable
 /**
   * Position builder.
   */
-private trait Builder {
+protected trait Builder[P <: Position] {
 
   /**
     * Executes play at the given intersection with the given color. The current color at 'x' is
@@ -23,20 +23,13 @@ private trait Builder {
   /**
     * @return a Position corresponding to this builder
     */
-  def build: Position
+  def build: P
 
-  /**
-    * @return a canonical Position corresponding to this builder
-    */
-  def buildCanonical(implicit size: Size): Position = {
-    canonify
-    build
-  }
-
-  def canonify(implicit size: Size): Unit = {
+  def canonify(implicit size: Size): this.type = {
     val colorIterators: IndexedSeq[(Iterator[Int], Dihedral4)] =
       Dihedral4.elements.map(e => (Position.orderedIntersections.map(x => this(e(x)).toInt), e))
     rotoflect(Utils.maxIterator(colorIterators, size * size))
+    this
   }
 
   /**
@@ -186,9 +179,9 @@ private trait Builder {
 
 private object Builder {
 
-  def initial(implicit size: Size): Builder = apply((_, _) => None)
+  def initial(implicit size: Size): Builder[Position] = apply((_, _) => None)
 
-  def apply(stateDescription: (Int, Int) => Color)(implicit size: Size): Builder = {
+  def apply(stateDescription: (Int, Int) => Color)(implicit size: Size): Builder[Position] = {
     new DefaultPosition(stateDescription)
   }
 }
