@@ -31,6 +31,18 @@ trait Position extends Any {
   def nextPositions(player: PlayerColor)(implicit forbidden: Set[Position]): Iterator[Position]
 
   /**
+    * The order of the returned positions is randomized (but not uniformly over all permutations).
+    *
+    * @param player for which the next positions shall be returned
+    * @param forbiddenCanonical usually, the previous positions, including the current one; should
+    *                           be given in canonical form
+    * @return all the possible next positions, up to isomorphism, after a non-pass move of the
+    *         player
+    */
+  def nextCanonicalPositions(player: PlayerColor)
+                            (implicit forbiddenCanonical: Set[Position]): Iterator[Position]
+
+  /**
     * Requires that the passed move be legal.
     *
     * @param move to be made

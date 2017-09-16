@@ -1,7 +1,6 @@
 package board.position
 
 import board.{Black, Color, Dihedral4, Intersection, Move, None, Pass, PlayerColor, Size, White}
-import commons.Utils
 import zobristcode.ZCode128
 
 import scala.collection.mutable
@@ -11,6 +10,11 @@ private trait PositionInternal extends Position {
   final override
   def nextPositions(player: PlayerColor)(implicit forbidden: Set[Position]): Iterator[Position] = {
     for (x <- Position.intersections; n <- withMove(x, player)) yield n
+  }
+
+  def nextCanonicalPositions(player: PlayerColor)
+                            (implicit forbiddenCanonical: Set[Position]): Iterator[Position] = {
+    ???
   }
 
   final override

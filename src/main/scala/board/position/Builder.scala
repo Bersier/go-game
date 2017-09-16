@@ -11,7 +11,8 @@ import scala.collection.mutable
 private trait Builder {
 
   /**
-    * Executes play at the given intersection with the given color.
+    * Executes play at the given intersection with the given color. The current color at 'x' is
+    * overwritten.
     */
   @inline final def playAt(x: Intersection, color: PlayerColor)(implicit size: Size): this.type = {
     this(x) = color
@@ -24,26 +25,18 @@ private trait Builder {
     */
   def build: Position
 
+  /**
+    * @return a canonical Position corresponding to this builder
+    */
   def buildCanonical(implicit size: Size): Position = {
-    val colorIterators: IndexedSeq[(Iterator[Int], Dihedral4)] =
-      Dihedral4.elements.map(e => (Position.orderedIntersections.map(x => this(e(x)).toInt), e))
-    val element = Utils.maxIterator(colorIterators, size*size)
-
-    if (element == Identity) this.build
-    else Position((i, j) => this(element(i, j)))
+    canonify
+    build
   }
 
   def canonify(implicit size: Size): Unit = {
     val colorIterators: IndexedSeq[(Iterator[Int], Dihedral4)] =
       Dihedral4.elements.map(e => (Position.orderedIntersections.map(x => this(e(x)).toInt), e))
-    val element = Utils.maxIterator(colorIterators, size*size)
-
-    if (element != Identity) {
-      val copy = this.build
-      for (x <- Position.orderedIntersections) {
-        this(x) = copy(element(x))
-      }
-    }
+    rotoflect(Utils.maxIterator(colorIterators, size * size))
   }
 
   /**
@@ -66,7 +59,18 @@ private trait Builder {
     this
   }
 
-  private[this] def rotate1(implicit size: Size): Unit = {
+  protected[this] def rotoflect(element: Dihedral4)(implicit size: Size): Unit = element match {
+    case Identity => ()
+    case Rotation1 => rotate1
+    case Rotation2 => rotate2
+    case Rotation3 => rotate3
+    case VerticalFlip => verticalFlip
+    case HorizontalFlip => horizontalFlip
+    case TransposeFlip => transposeFlip
+    case OppositeFlip => oppositeFlip
+  }
+
+  protected[this] def rotate1(implicit size: Size): Unit = {
     for (i <- 0 until (1 + size) / 2) {
       for (j <- 0 until size / 2) {
         val x0 = Intersection(i, j)
@@ -83,13 +87,13 @@ private trait Builder {
     }
   }
 
-  private[this] def rotate2(implicit size: Size): Unit = {
+  protected[this] def rotate2(implicit size: Size): Unit = {
     for (index <- 0 until size * size / 2) {
       swap(Intersection.fromIndex(index), Rotation2(Intersection.fromIndex(index)))
     }
   }
 
-  private[this] def rotate3(implicit size: Size): Unit = {
+  protected[this] def rotate3(implicit size: Size): Unit = {
     for (i <- 0 until (1 + size) / 2) {
       for (j <- 0 until size / 2) {
         val x0 = Intersection(i, j)
@@ -106,7 +110,7 @@ private trait Builder {
     }
   }
 
-  private[this] def verticalFlip(implicit size: Size): Unit = {
+  protected[this] def verticalFlip(implicit size: Size): Unit = {
     for (i <- 0 until size / 2) {
       for (j <- 0 until size) {
         swap(Intersection(i, j), VerticalFlip(Intersection(i, j)))
@@ -114,7 +118,7 @@ private trait Builder {
     }
   }
 
-  private[this] def horizontalFlip(implicit size: Size): Unit = {
+  protected[this] def horizontalFlip(implicit size: Size): Unit = {
     for (i <- 0 until size) {
       for (j <- 0 until size / 2) {
         swap(Intersection(i, j), HorizontalFlip(Intersection(i, j)))
@@ -122,7 +126,7 @@ private trait Builder {
     }
   }
 
-  private[this] def transposeFlip(implicit size: Size): Unit = {
+  protected[this] def transposeFlip(implicit size: Size): Unit = {
     for (i <- 0 until size) {
       for (j <- 0 until i) {
         swap(Intersection(i, j), TransposeFlip(Intersection(i, j)))
@@ -130,7 +134,7 @@ private trait Builder {
     }
   }
 
-  private[this] def oppositeFlip(implicit size: Size): Unit = {
+  protected[this] def oppositeFlip(implicit size: Size): Unit = {
     for (i <- 0 until size) {
       for (j <- 0 until size - 1 - i) {
         swap(Intersection(i, j), OppositeFlip(Intersection(i, j)))
@@ -176,7 +180,7 @@ private trait Builder {
       removeDead(n, color.dual)(transAlives)
     }
 
-    removeDead(x, color)(Utils.MockSet)
+    removeDead(x, color)(Utils.mockSet)
   }
 }
 
