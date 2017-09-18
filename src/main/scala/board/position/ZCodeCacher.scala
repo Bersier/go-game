@@ -4,8 +4,9 @@ import board.{Color, Intersection}
 import zobristcode.ZCode128
 
 protected abstract
-class ZCodeCacher(protected[this] var zCode1: Long, protected[this] var zCode2: Long)
-  extends PositionInternal[Position] with Builder[Position] {
+class ZCodeCacher[+P <: Position](protected[this] var zCode1: Long, protected[this] var zCode2: Long)
+  extends PositionInternal[P] with Builder[P] {
+  this: P =>
 
   final override def toZobristCode: ZCode128 = ZCode128(zCode1, zCode2)
 

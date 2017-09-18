@@ -2,9 +2,10 @@ package board.position
 import board.{Color, Intersection, Size}
 import zobristcode.ZCode128
 
-private final
-class EfficientPosition private(representation: Array[Long], zc1: Long, zc2: Long)
-  extends ZCodeCacher(zc1, zc2) {
+private abstract
+class EfficientPosition[+P <: Position] protected(representation: Array[Long], zc1: Long, zc2: Long)
+  extends ZCodeCacher[P](zc1, zc2) {
+  this: P =>
 
   private[this] def this(representation: Array[Long], zCode128: ZCode128) = {
     this(representation, zCode128._1, zCode128._2)
@@ -19,10 +20,6 @@ class EfficientPosition private(representation: Array[Long], zc1: Long, zc2: Lon
   }
 
   override protected[position] implicit def size: Size = Size(representation.length)
-
-  override protected[this] def nextPositionBuilder: Builder[Position] = {
-    new EfficientPosition(representation.clone, zCode1, zCode2)
-  }
 
   override def build: this.type = this
 
@@ -47,7 +44,7 @@ class EfficientPosition private(representation: Array[Long], zc1: Long, zc2: Lon
 
 private object EfficientPosition {
 
-  private def toArray(map: (Int, Int) => Color)(implicit size: Size): Array[Long] = {
+  def toArray(map: (Int, Int) => Color)(implicit size: Size): Array[Long] = {
     for (i <- 0 until size) yield {
       var row = 0L
       for (j <- (size - 1) to 0 by -1) {

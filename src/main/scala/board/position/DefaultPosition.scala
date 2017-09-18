@@ -4,7 +4,7 @@ import board.{Color, Intersection, Size}
 import zobristcode.ZCode128
 
 private final class DefaultPosition private(board: Array[Array[Color]], zc1: Long, zc2: Long)
-  extends ZCodeCacher(zc1, zc2) {
+  extends ZCodeCacher[Position](zc1, zc2) {
 
   private[this] def this(board: Array[Array[Color]], zCode: ZCode128) = {
     this(board, zCode._1, zCode._2)

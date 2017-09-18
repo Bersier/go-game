@@ -9,7 +9,7 @@ import scala.collection.mutable
 /**
   * Position builder.
   */
-protected trait Builder[P <: Position] extends AbstractPosition {
+protected trait Builder[+P <: Position] extends AbstractPosition {
 
   /**
     * Executes play at the given intersection with the given color. The current color at 'x' is
@@ -61,18 +61,20 @@ protected trait Builder[P <: Position] extends AbstractPosition {
     this
   }
 
-  protected[this] def rotoflect(element: Dihedral4)(implicit size: Size): Unit = {
-    element match {
-      case Identity => ()
-      case Rotation1 => rotate1
-      case Rotation2 => rotate2
-      case Rotation3 => rotate3
-      case VerticalFlip => verticalFlip
-      case HorizontalFlip => horizontalFlip
-      case TransposeFlip => transposeFlip
-      case OppositeFlip => oppositeFlip
+  protected[this] def rotoflect(permutation: Dihedral4)(implicit size: Size): Unit = {
+    if (permutation != Identity) {
+      permutation match {
+        case Rotation1 => rotate1
+        case Rotation2 => rotate2
+        case Rotation3 => rotate3
+        case VerticalFlip => verticalFlip
+        case HorizontalFlip => horizontalFlip
+        case TransposeFlip => transposeFlip
+        case OppositeFlip => oppositeFlip
+        case Identity => require(false)
+      }
+      updateZCode
     }
-    updateZCode
   }
 
   protected[this] def rotate1(implicit size: Size): Unit = {
@@ -194,6 +196,6 @@ private object Builder {
   def initial(implicit size: Size): Builder[Position] = apply((_, _) => None)
 
   def apply(stateDescription: (Int, Int) => Color)(implicit size: Size): Builder[Position] = {
-    new EfficientPosition(stateDescription)
+    new EfficientCanonicalPosition(stateDescription)
   }
 }

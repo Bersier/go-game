@@ -26,7 +26,7 @@ private class TinyBuilder(reference: PositionInternal[Position]) extends Builder
       }
       new TinyPosition(reference, updatesLong)
     }
-    else new EfficientPosition(reference)(reference.size).update(updates.toIterator).build
+    else ??? //new EfficientPosition(reference)(reference.size).update(updates.toIterator).build
   }
 
   override def apply(x: Intersection): Color = updates.getOrElse(x, reference(x))

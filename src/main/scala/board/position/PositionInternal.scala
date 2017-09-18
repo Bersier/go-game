@@ -5,15 +5,15 @@ import zobristcode.ZCode128
 
 import scala.collection.{Set, mutable}
 
-protected trait PositionInternal[P <: Position] extends Position {
+protected trait PositionInternal[+P <: Position] extends Position {
   this: P =>
 
-  final override
+  override
   def nextPositions(player: PlayerColor)(implicit forbidden: Set[ZCode128]): Iterator[P] = {
     for (x <- Position.intersections; n <- withMove(x, player)) yield n
   }
 
-  final override
+  override
   def withMove(move: Move, player: PlayerColor)(implicit prev: Set[ZCode128]): P = move match {
     case x: Intersection => {
       require(apply(x) == None, s"Illegal move: $x is already occupied")
@@ -35,7 +35,7 @@ protected trait PositionInternal[P <: Position] extends Position {
     */
   protected[this] def nextPositionBuilder: Builder[P]
 
-  private[this] def withMove(x: Intersection, color: PlayerColor)
+  protected[this] def withMove(x: Intersection, color: PlayerColor)
                             (implicit forbidden: Set[ZCode128]): Option[P] = this(x) match {
     case None => Some(
       nextPositionBuilder.playAt(x, color).build).filterNot(p => forbidden(p.toZobristCode)
