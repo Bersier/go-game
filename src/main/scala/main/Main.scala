@@ -1,127 +1,85 @@
 package main
 
-import board.{Black, PlayerColor, Size, White}
 import board.position.Position
+import board.{Black, PlayerColor, Size}
 import zobristcode.ZCode128
 
 import scala.collection.mutable
 
 object Main extends App {
 
+  var cleanupTime: Long = 0
+  var playAtTime: Long = 0
+  var canonifyTime: Long = 0
+  var maxIteratorTime: Long = 0
+  private var startTime: Long = 0
+
   type Positions = mutable.Set[ZCode128]
 
-  for (i <- 1 until 3) {
-    println(i + ": " + komi(Size(i)))
+  for (i <- 1 until 20) {
+    println("Komi for " + i + "x" + i + ": " + komi(Size(i)))
   }
 
   def komi(implicit size: Size): Int = {
+    callCount = 0
+    cleanupTime = 0
+    startTime = System.currentTimeMillis()
     val maxKomi = size * size
-    komi(-maxKomi, maxKomi, Black, lastMoveWasPass = false)(Position.initial, mutable.Set.empty[ZCode128], size)
+    komi(-maxKomi, maxKomi, Black, Position.initial)(mutable.Set.empty[ZCode128], size)
   }
 
   private
-  def komi(min: Int, max: Int, color: PlayerColor)
-          (implicit position: Position, prev: Positions, size: Size): Int = withUpdatedPrev {
-    val nextPositions = position.nextPositions(color)(prev)
-    if (nextPositions.isEmpty) {
-      val count = position.count
-      val c = count(color) - count(color.dual)
-//      println(color + " " + c)
-      c
-    }
-    else {
-      def loop(min: Int): Int = {
-        val newMin = math.max(min, -komi(-max, -min, color.dual)(nextPositions.next, prev, size))
-        if (newMin >= max) newMin
-        else if (nextPositions.isEmpty) newMin
-        else loop(newMin)
-      }
-      loop(min)
-    }
+  def komi(min: Int, max: Int, color: PlayerColor, position: Position)
+          (implicit prev: Positions, size: Size): Int = withUpdatedPrev(position) {
+    komiBody(min, -komiPass(-max, -min, color.dual, position), max, color, position)
   }
 
   private
-  def komi(min: Int, max: Int, color: PlayerColor, lastMoveWasPass: Boolean)
-          (implicit position: Position, prev: Positions, size: Size): Int = withUpdatedPrev {
+  def komiPass(min: Int, max: Int, color: PlayerColor, position: Position)
+              (implicit prev: Positions, size: Size): Int = {
+    komiBody(min, areaDiff(position, color), max, color, position)
+  }
+
+  private
+  def komiBody(min: Int, newMin: /*=> */Int, max: Int, color: PlayerColor, position: Position)
+              (implicit prev: Positions, size: Size): Int = {
+    if (callCount % 100000 == 0) {
+      println("callcount = " + callCount)
+      println("cleanupTime = " + cleanupTime)
+      println("playAtTime = " + playAtTime)
+      println("canonifyTime = " + canonifyTime)
+      println("maxIteratorTime = " + maxIteratorTime)
+      println("totalTime = " + (System.currentTimeMillis() - startTime) + "\n")
+    }
+    callCount += 1
+//    print(position)
+//    println(color)
     val nextPositions = position.nextPositions(color)(prev)
 
     def loop(min: Int): Int = {
       if (min >= max || nextPositions.isEmpty) min
-      else {
-        loop(math.max(
-          min,
-          -komi(-max, -min, color.dual, lastMoveWasPass = false)(nextPositions.next, prev, size)
-        ))
-      }
+      else loop(math.max(min, -komi(-max, -min, color.dual, nextPositions.next)))
     }
 
-    val newMin = if (lastMoveWasPass) areaDiff(position, color)
-    else -komi(-max, -min, color.dual, lastMoveWasPass = true)(position, prev, size)
-
-    loop(newMin)
-  }
-
-  private
-  def komiBlack(min: Int, max: Int)
-               (implicit position: Position, prev: Positions, size: Size): Int = withUpdatedPrev {
-    val nextPositions = position.nextPositions(Black)(prev)
-    if (nextPositions.isEmpty) countDiff(position)
-    else {
-      def loop(min: Int): Int = {
-        val newMin = math.max(min, komiWhite(min, max)(nextPositions.next, prev, size))
-        if (newMin >= max) newMin
-        else if (nextPositions.isEmpty) newMin
-        else loop(newMin)
-      }
-      loop(min)
-    }
-  }
-
-  private
-  def komiWhite(min: Int, max: Int)
-               (implicit position: Position, prev: Positions, size: Size): Int = withUpdatedPrev {
-    val nextPositions = position.nextPositions(White)(prev)
-    if (nextPositions.isEmpty) countDiff(position)
-    else {
-      def loop(max: Int): Int = {
-        val newMax = math.min(max, komiBlack(min, max)(nextPositions.next, prev, size))
-        if (min >= newMax) newMax
-        else if (nextPositions.isEmpty) newMax
-        else loop(newMax)
-      }
-      loop(max)
-    }
+    val a = loop(math.max(min, newMin))
+//    println(">")
+    a
   }
 
   private def areaDiff(position: Position, color: PlayerColor) = {
     val area = position.area
+//    println(color + " " + (area(color) - area(color.dual)))
     area(color) - area(color.dual)
-  }
-
-  private def countDiff(position: Position) = {
-    val count = position.count
-    println("black! " + (count(Black) - count(White)))
-    count(Black) - count(White)
   }
 
   private var maxPrevCount = 0
   private var callCount = 0
 
   private
-  def withUpdatedPrev[A](getA: => A)(implicit position: Position, prev: Positions): A = {
-    if (callCount % 100000 == 0) println("callCount = " + callCount)
-    callCount += 1
-//    println("<")
-//    println(position)
+  def withUpdatedPrev[A](position: Position)(getA: => A)(implicit prev: Positions): A = {
     prev += position.toZobristCode
-    if (maxPrevCount < prev.size) {
-//      print(position)
-      maxPrevCount = prev.size
-      println(s"maxPrevCount = $maxPrevCount\n")
-    }
     val a = getA
     prev -= position.toZobristCode
-//    print(">")
     a
   }
 }

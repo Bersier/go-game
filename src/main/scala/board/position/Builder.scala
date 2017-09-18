@@ -2,6 +2,7 @@ package board.position
 
 import board.{Color, Dihedral4, HorizontalFlip, Identity, Intersection, None, OppositeFlip, PlayerColor, Rotation1, Rotation2, Rotation3, Size, TransposeFlip, VerticalFlip}
 import commons.Utils
+import main.Main
 import zobristcode.ZCode128
 
 import scala.collection.mutable
@@ -16,8 +17,10 @@ protected trait Builder[+P <: Position] extends AbstractPosition {
     * overwritten.
     */
   @inline final def playAt(x: Intersection, color: PlayerColor)(implicit size: Size): this.type = {
+    Main.playAtTime -= System.currentTimeMillis()
     this(x) = color
     cleanup(x, color)
+    Main.playAtTime += System.currentTimeMillis()
     this
   }
 
@@ -27,9 +30,13 @@ protected trait Builder[+P <: Position] extends AbstractPosition {
   def build: P
 
   def canonify(implicit size: Size): this.type = {
-    val colorIterators: IndexedSeq[(Iterator[Int], Dihedral4)] =
-      Dihedral4.elements.map(e => (Position.orderedIntersections.map(x => this(e(x)).toInt), e))
-    rotoflect(Utils.maxIterator(colorIterators, size * size))
+    Main.canonifyTime -= System.currentTimeMillis()
+    val f = (index: Int) => (e: Dihedral4) => this (e(Intersection.fromIndex(index))).toInt
+    Main.maxIteratorTime -= System.currentTimeMillis()
+    val permutation = Utils.argMax(Dihedral4.elements, f, size * size)
+    Main.maxIteratorTime += System.currentTimeMillis()
+    rotoflect(permutation)
+    Main.canonifyTime += System.currentTimeMillis()
     this
   }
 
@@ -159,6 +166,7 @@ protected trait Builder[+P <: Position] extends AbstractPosition {
     * Removes all stones that died from player 'color' playing at 'x'.
     */
   private[this] def cleanup(x: Intersection, color: PlayerColor)(implicit size: Size) {
+    Main.cleanupTime -= System.currentTimeMillis()
     assert(apply(x) == color)
     def removeDead(x: Intersection, color: PlayerColor)(alive: mutable.Set[Intersection]) {
       val visited = mutable.Set[Intersection]()
@@ -188,6 +196,7 @@ protected trait Builder[+P <: Position] extends AbstractPosition {
     }
 
     removeDead(x, color)(Utils.mockSet)
+    Main.cleanupTime += System.currentTimeMillis()
   }
 }
 

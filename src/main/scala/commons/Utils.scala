@@ -155,13 +155,26 @@ object Utils {
     else maxIterator(argsMax(sequences.iterator)(w => w._1.next), iteratorsLength - 1)
   }
 
+//  /**
+//    * @param sequences is required to be non-empty
+//    * @param sequencesLength the minimum length of the iterators in 'sequence'
+//    * @return the value corresponding to the 'biggest' iterator
+//    */
+//  def max[Value](sequences: Iterable[(IndexedSeq[Int], Value)], sequencesLength: Int): Value = {
+//    def maxHelper(sequences: Iterable[(IndexedSeq[Int], Value)], i: Int): Value = {
+//      if (sequences.size == 1 || i >= sequencesLength) sequences.iterator.next._2
+//      else maxHelper(argsMax(sequences.iterator)(w => w._1(i)), i + 1)
+//    }
+//    maxHelper(sequences, 0)
+//  }
+
   /**
     * @param sequences is required to be non-empty
     * @param sequencesLength the minimum length of the iterators in 'sequence'
     * @return the value corresponding to the 'biggest' iterator
     */
-  def max[Value](sequences: Iterable[(IndexedSeq[Int], Value)], sequencesLength: Int): Value = {
-    def maxHelper(sequences: Iterable[(IndexedSeq[Int], Value)], i: Int): Value = {
+  def max[Value](sequences: Iterable[(Int => Int, Value)], sequencesLength: Int): Value = {
+    def maxHelper(sequences: Iterable[(Int => Int, Value)], i: Int): Value = {
       if (sequences.size == 1 || i >= sequencesLength) sequences.iterator.next._2
       else maxHelper(argsMax(sequences.iterator)(w => w._1(i)), i + 1)
     }
@@ -169,16 +182,14 @@ object Utils {
   }
 
   /**
-    * @param sequences is required to be non-empty
-    * @param sequencesLength the minimum length of the iterators in 'sequence'
-    * @return the value corresponding to the 'biggest' iterator
+    * @param as is required to be non-empty
     */
-  def max[Value](sequences: (IndexedSeq[Int], Value)*)(sequencesLength: Int): Value = {
-    def maxHelper(sequences: Iterable[(IndexedSeq[Int], Value)], i: Int): Value = {
-      if (sequences.size == 1 || i >= sequencesLength) sequences.iterator.next._2
-      else maxHelper(argsMax(sequences.iterator)(w => w._1(i)), i + 1)
+  def argMax[A](as: IndexedSeq[A], f: Int => A => Int, bound: Int): A = {
+    def argMax(as: IndexedSeq[A], i: Int): A = {
+      if (as.size == 1 || i >= bound) as(0)
+      else argMax(argsMax(as.iterator)(f(i)), i + 1)
     }
-    maxHelper(sequences, 0)
+    argMax(as, 0)
   }
 
   /**
