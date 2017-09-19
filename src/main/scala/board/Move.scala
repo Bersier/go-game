@@ -33,8 +33,6 @@ final class Intersection private(private val x: Int) extends AnyVal with Move {
   }
 
   override def toString: String = s"[$i,$j]"
-
-  private[board] def toInt: Int = x
 }
 
 object Intersection {
@@ -55,8 +53,6 @@ object Intersection {
     assert(index <= size*size)
     new Intersection(index % size + (index / size << shift))
   }
-
-  private[board] def fromInt(int: Int): Intersection = new Intersection(int)
 
   def apply(ij: (Int, Int)): Intersection = {
     assert(ij._1 >= 0)

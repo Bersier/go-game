@@ -31,9 +31,16 @@ protected trait Builder[+P <: Position] extends AbstractPosition {
 
   def canonify(implicit size: Size): this.type = {
     Main.canonifyTime -= System.currentTimeMillis()
-    val f = (index: Int) => (e: Dihedral4) => this (e(Intersection.fromIndex(index))).toInt
+    val f = (index: Int) => (e: Dihedral4) => {
+      val newIndex = 4*index
+      (this(e(Intersection.fromIndex(newIndex))).toInt << 6) +
+      (this(e(Intersection.fromIndex(newIndex + 1))).toInt << 4) +
+      (this(e(Intersection.fromIndex(newIndex + 2))).toInt << 2) +
+       this(e(Intersection.fromIndex(newIndex + 3))).toInt
+    }
     Main.maxIteratorTime -= System.currentTimeMillis()
-    val permutation = Utils.argMax(Dihedral4.elements, f, size * size)
+    // The last intersection never actually needs to get checked to find the canonical position.
+    val permutation = Utils.argMax(Dihedral4.elements, f, size * size / 4)
     Main.maxIteratorTime += System.currentTimeMillis()
     rotoflect(permutation)
     Main.canonifyTime += System.currentTimeMillis()
@@ -191,11 +198,19 @@ protected trait Builder[+P <: Position] extends AbstractPosition {
     }
 
     val transAlives = IntersectionSet.empty
-    for (n <- x.neighbors if this(n) == color.dual) {
-      removeDead(n, color.dual)(transAlives)
+    var liberty = false
+    for (n <- x.neighbors) {
+      if (this(n) == color.dual) {
+        removeDead(n, color.dual)(transAlives)
+      }
+      if (this(n) == None) {
+        liberty = true
+      }
     }
 
-    removeDead(x, color)(Utils.mockSet)
+    if (! liberty) {
+      removeDead(x, color)(Utils.mockSet)
+    }
     Main.cleanupTime += System.currentTimeMillis()
   }
 }
