@@ -1,6 +1,6 @@
 package board.position
 
-import board.{Color, Dihedral4, HorizontalFlip, Identity, Intersection, None, OppositeFlip, PlayerColor, Rotation1, Rotation2, Rotation3, Size, TransposeFlip, VerticalFlip}
+import board.{Color, Dihedral4, HorizontalFlip, Identity, Intersection, IntersectionSet, None, OppositeFlip, PlayerColor, Rotation1, Rotation2, Rotation3, Size, TransposeFlip, VerticalFlip}
 import commons.Utils
 import main.Main
 import zobristcode.ZCode128
@@ -169,12 +169,12 @@ protected trait Builder[+P <: Position] extends AbstractPosition {
     Main.cleanupTime -= System.currentTimeMillis()
     assert(apply(x) == color)
     def removeDead(x: Intersection, color: PlayerColor)(alive: mutable.Set[Intersection]) {
-      val visited = mutable.Set[Intersection]()
+      val visited = IntersectionSet.empty
       def isAlive(x: Intersection): Boolean = {
         if (alive(x)) true
         else if (visited(x)) false
-        else if (apply(x) == None) true
-        else if (apply(x) != color) false
+        else if (this(x) == None) true
+        else if (this(x) != color) false
         else {
           visited += x
           x.neighbors.exists(isAlive)
@@ -190,8 +190,8 @@ protected trait Builder[+P <: Position] extends AbstractPosition {
       }
     }
 
-    val transAlives = mutable.Set[Intersection]()
-    for (n <- x.neighbors if apply(n) == color.dual) {
+    val transAlives = IntersectionSet.empty
+    for (n <- x.neighbors if this(n) == color.dual) {
       removeDead(n, color.dual)(transAlives)
     }
 

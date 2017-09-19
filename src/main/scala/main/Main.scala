@@ -16,13 +16,16 @@ object Main extends App {
 
   type Positions = mutable.Set[ZCode128]
 
-  for (i <- 1 until 20) {
+  for (i <- 19 until 20) {
     println("Komi for " + i + "x" + i + ": " + komi(Size(i)))
   }
 
   def komi(implicit size: Size): Int = {
     callCount = 0
     cleanupTime = 0
+    playAtTime = 0
+    canonifyTime = 0
+    maxIteratorTime = 0
     startTime = System.currentTimeMillis()
     val maxKomi = size * size
     komi(-maxKomi, maxKomi, Black, Position.initial)(mutable.Set.empty[ZCode128], size)
