@@ -32,7 +32,7 @@ protected trait Builder[+P <: Position] extends AbstractPosition {
   def canonify(implicit size: Size): this.type = {
     Main.canonifyTime -= System.currentTimeMillis()
     val f = (index: Int) => (e: Dihedral4) => {
-      val newIndex = 4*index
+      val newIndex = 4 * index
       (this(e(Intersection.fromIndex(newIndex))).toInt << 6) +
       (this(e(Intersection.fromIndex(newIndex + 1))).toInt << 4) +
       (this(e(Intersection.fromIndex(newIndex + 2))).toInt << 2) +

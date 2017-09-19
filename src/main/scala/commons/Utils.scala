@@ -3,6 +3,7 @@ package commons
 import java.security.SecureRandom
 
 import board.Intersection
+import main.Main
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -199,11 +200,20 @@ object Utils {
     */
   def argsMax[A, B](collection: Iterator[A])
                    (f: A => B)(implicit ord: Ordering[B]): IndexedSeq[A] = {
+    Main.argsMaxTime -= System.currentTimeMillis()
     val next = collection.next
     var argMax = ArrayBuffer(next)
+    Main.fTime -= System.currentTimeMillis()
     var max = f(next)
+    Main.fTime += System.currentTimeMillis()
+    Main.fCount += 1
     for (a <- collection) {
+      Main.fTime -= System.currentTimeMillis()
       val fa = f(a)
+      Main.fTime += System.currentTimeMillis()
+      Main.fCount += 1
+      Main.fakeTime -= System.currentTimeMillis()
+      Main.fakeTime += System.currentTimeMillis()
       if (ord.gteq(fa, max)) {
         if (ord.gt(fa, max)) {
           argMax = ArrayBuffer(a)
@@ -214,6 +224,7 @@ object Utils {
         }
       }
     }
+    Main.argsMaxTime += System.currentTimeMillis()
     argMax
   }
 

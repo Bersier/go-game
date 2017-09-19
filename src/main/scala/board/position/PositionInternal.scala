@@ -37,9 +37,8 @@ protected trait PositionInternal[+P <: Position] extends Position {
 
   protected[this] def withMove(x: Intersection, color: PlayerColor)
                             (implicit forbidden: Set[ZCode128]): Option[P] = this(x) match {
-    case None => Some(
-      nextPositionBuilder.playAt(x, color).build).filterNot(p => forbidden(p.toZobristCode)
-    )
+    case None => Some(nextPositionBuilder.playAt(x, color).build)
+      .filterNot(p => forbidden(p.toZobristCode))
     case _ => Option.empty
   }
 

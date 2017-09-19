@@ -8,24 +8,34 @@ import scala.collection.mutable
 
 object Main extends App {
 
+  var fCount = 0
+  var positionCount = 0
   var cleanupTime: Long = 0
   var playAtTime: Long = 0
   var canonifyTime: Long = 0
   var maxIteratorTime: Long = 0
+  var argsMaxTime: Long = 0
+  var fTime: Long = 0
+  var fakeTime: Long = 0
   private var startTime: Long = 0
 
   type Positions = mutable.Set[ZCode128]
 
-  for (i <- 19 until 20) {
-    println("Komi for " + i + "x" + i + ": " + komi(Size(i)))
-  }
+  val i = 19
+  print("Komi for " + i + "x" + i + ": ")
+  println(komi(Size(i)))
 
   def komi(implicit size: Size): Int = {
+    fCount = 0
+    positionCount = 0
     callCount = 0
     cleanupTime = 0
     playAtTime = 0
     canonifyTime = 0
     maxIteratorTime = 0
+    argsMaxTime = 0
+    fTime = 0
+    fakeTime = 0
     startTime = System.currentTimeMillis()
     val maxKomi = size * size
     komi(-maxKomi, maxKomi, Black, Position.initial)(mutable.Set.empty[ZCode128], size)
@@ -47,11 +57,16 @@ object Main extends App {
   def komiBody(min: Int, newMin: /*=> */Int, max: Int, color: PlayerColor, position: Position)
               (implicit prev: Positions, size: Size): Int = {
     if (callCount % 100000 == 0) {
-      println("callcount = " + callCount)
+      println("callCount = " + callCount)
+      println("positionCount = " + positionCount)
       println("cleanupTime = " + cleanupTime)
       println("playAtTime = " + playAtTime)
       println("canonifyTime = " + canonifyTime)
       println("maxIteratorTime = " + maxIteratorTime)
+      println("argsMaxTime = " + argsMaxTime)
+      println("fTime = " + fTime)
+      println("fCount = " + fCount)
+      println("fakeTime = " + fakeTime)
       println("totalTime = " + (System.currentTimeMillis() - startTime) + "\n")
     }
     callCount += 1

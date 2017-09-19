@@ -1,11 +1,14 @@
 package board.position
 import board.{Color, Intersection, Size}
+import main.Main
 import zobristcode.ZCode128
 
 private abstract
 class EfficientPosition[+P <: Position] protected(representation: Array[Long], zc1: Long, zc2: Long)
   extends ZCodeCacher[P](zc1, zc2) {
   this: P =>
+
+  Main.positionCount += 1
 
   private[this] def this(representation: Array[Long], zCode128: ZCode128) = {
     this(representation, zCode128._1, zCode128._2)
@@ -15,22 +18,22 @@ class EfficientPosition[+P <: Position] protected(representation: Array[Long], z
     this(EfficientPosition.toArray(map), ZobristCoder.get.computeCode(map))
   }
 
-  override def apply(i: Int, j: Int): Color = {
+  final override def apply(i: Int, j: Int): Color = {
     Color.fromInt(((representation(i) >>> 2*j) & 3).toInt)
   }
 
-  override protected[position] implicit def size: Size = Size(representation.length)
+  final override protected[position] implicit def size: Size = Size(representation.length)
 
   override def build: this.type = this
 
-  override protected[this] def updateRaw(x: Intersection, color: Color): Unit = {
+  final override protected[this] def updateRaw(x: Intersection, color: Color): Unit = {
     // See https://graphics.stanford.edu/~seander/bithacks.html#MaskedMerge
     val mask = 3L << 2*x.j
     val update = color.toInt.toLong << 2*x.j
     representation(x.i) ^= ((representation(x.i) ^ update) & mask)
   }
 
-  protected[this] override def verticalFlip(implicit size: Size): Unit = {
+  protected[this] final override def verticalFlip(implicit size: Size): Unit = {
     for (i <- 0 until size / 2) {
       val temp = representation(i)
       representation(i) = representation(size - 1 - i)
