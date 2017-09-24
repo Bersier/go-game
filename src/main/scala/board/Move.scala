@@ -16,6 +16,7 @@ final class Intersection private(private val x: Int) extends AnyVal with Move {
     * @return all the neighbors of this intersection
     */
   def neighbors(implicit s: Size): Traversable[Intersection] = new Traversable[Intersection] {
+
     override def foreach[U](f: (Intersection) => U): Unit = {
       if (i > 0) {
         f(new Intersection(x & Intersection.jMask | i - 1 << Intersection.shift))
@@ -29,6 +30,13 @@ final class Intersection private(private val x: Int) extends AnyVal with Move {
       if (j + 1 < s) {
         f(new Intersection(x & Intersection.iMask | j + 1))
       }
+    }
+
+    override def exists(p: (Intersection) => Boolean): Boolean = {
+      i > 0 && p(new Intersection(x & Intersection.jMask | i - 1 << Intersection.shift)) ||
+      j > 0 && p(new Intersection(x & Intersection.iMask | j - 1)) ||
+      i + 1 < s && p(new Intersection(x & Intersection.jMask | i + 1 << Intersection.shift)) ||
+      j + 1 < s && p(new Intersection(x & Intersection.iMask | j + 1))
     }
   }
 

@@ -11,12 +11,16 @@ object Main extends App {
   var fCount = 0
   var positionCount = 0
   var cleanupTime: Long = 0
+  var cleanupCount = 0
+  var removeDeadCount = 0
+  var withMoveTime: Long = 0
   var playAtTime: Long = 0
   var canonifyTime: Long = 0
   var maxIteratorTime: Long = 0
   var argsMaxTime: Long = 0
   var fTime: Long = 0
   var fakeTime: Long = 0
+  var hasNextTime: Long = 0
   private var startTime: Long = 0
 
   type Positions = mutable.Set[ZCode128]
@@ -30,12 +34,16 @@ object Main extends App {
     positionCount = 0
     callCount = 0
     cleanupTime = 0
+    cleanupCount = 0
+    removeDeadCount = 0
+    withMoveTime = 0
     playAtTime = 0
     canonifyTime = 0
     maxIteratorTime = 0
     argsMaxTime = 0
     fTime = 0
     fakeTime = 0
+    hasNextTime = 0
     startTime = System.currentTimeMillis()
     val maxKomi = size * size
     komi(-maxKomi, maxKomi, Black, Position.initial)(mutable.Set.empty[ZCode128], size)
@@ -60,6 +68,9 @@ object Main extends App {
       println("callCount = " + callCount)
       println("positionCount = " + positionCount)
       println("cleanupTime = " + cleanupTime)
+      println("cleanupCount = " + cleanupCount)
+      println("removeDeadCount = " + removeDeadCount)
+      println("withMoveTime = " + withMoveTime)
       println("playAtTime = " + playAtTime)
       println("canonifyTime = " + canonifyTime)
       println("maxIteratorTime = " + maxIteratorTime)
@@ -67,6 +78,7 @@ object Main extends App {
       println("fTime = " + fTime)
       println("fCount = " + fCount)
       println("fakeTime = " + fakeTime)
+      println("hasNextTime = " + hasNextTime)
       println("totalTime = " + (System.currentTimeMillis() - startTime) + "\n")
     }
     callCount += 1

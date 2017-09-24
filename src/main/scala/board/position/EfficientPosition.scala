@@ -22,6 +22,10 @@ class EfficientPosition[+P <: Position] protected(representation: Array[Long], z
     Color.fromInt(((representation(i) >>> 2*j) & 3).toInt)
   }
 
+  final override def colorToIntAt(x: Intersection): Int = {
+    ((representation(x.i) >>> 2*x.j) & 3).toInt
+  }
+
   final override protected[position] implicit def size: Size = Size(representation.length)
 
   override def build: this.type = this

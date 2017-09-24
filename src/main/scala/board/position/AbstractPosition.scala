@@ -13,4 +13,9 @@ trait AbstractPosition extends ((Int, Int) => Color) {
     * @return the color at the given intersection
     */
   def apply(x: Intersection): Color = apply(x.i, x.j)
+
+  /**
+    * @return the color at the given intersection
+    */
+  def colorToIntAt(x: Intersection): Int = apply(x).toInt
 }

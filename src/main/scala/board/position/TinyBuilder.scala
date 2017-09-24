@@ -10,8 +10,8 @@ private class TinyBuilder(reference: PositionInternal[Position]) extends Builder
   private[this] val updates = mutable.Map.empty[Intersection, Color]
 
   override def build: Position = {
-    val sizeBitCount = Utils.intLog(reference.size - 1)
-    val moveBitCount = 2 * Utils.intLog(reference.size - 1) + 2
+    val sizeBitCount = Utils.intLength(reference.size - 1)
+    val moveBitCount = 2 * sizeBitCount + 2
     val maxMoveCount = 64 / moveBitCount
     if (updates.size <= maxMoveCount) {
       Position.intersections(reference.size)

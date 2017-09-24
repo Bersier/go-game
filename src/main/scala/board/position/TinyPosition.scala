@@ -28,7 +28,7 @@ private final class TinyPosition(reference: PositionInternal[Position], updates:
   override protected[position] implicit def size: Size = reference.size
 
   private[this] def updatedIntersections: Iterator[(Intersection, Color)] = {
-    val sizeBitCount = Utils.intLog(size - 1)
+    val sizeBitCount = Utils.intLength(size - 1)
     val moveBitCount = 2*sizeBitCount + 2
     val coordinateMask = (1 << sizeBitCount) - 1
     for (b <- (0 to (64 - moveBitCount) by moveBitCount).toIterator) yield {

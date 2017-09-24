@@ -1,6 +1,7 @@
 package board.position
 
 import board.{Black, Color, Intersection, Move, None, Pass, PlayerColor, Size, White}
+import main.Main
 import zobristcode.ZCode128
 
 import scala.collection.{Set, mutable}
@@ -9,9 +10,36 @@ protected trait PositionInternal[+P <: Position] extends Position {
   this: P =>
 
   override
-  def nextPositions(player: PlayerColor)(implicit forbidden: Set[ZCode128]): Iterator[P] = {
-    for (x <- Position.intersections; n <- withMove(x, player)) yield n
+  def nextPositions(player: PlayerColor)
+                   (implicit forbidden: Set[ZCode128]): Iterator[P] = new Iterator[P] {
+    private[this] val intersections = Position.intersections(PositionInternal.this.size)
+    private[this] var nextPosition: P = _
+
+    override def hasNext(): Boolean = {
+      def hasNext: Boolean = {
+        if (intersections.hasNext) {
+          val candidate = withMove(intersections.next, player)
+          if (candidate.nonEmpty) {
+            nextPosition = candidate.get
+            true
+          }
+          else hasNext
+        }
+        else false
+      }
+      Main.hasNextTime -= System.currentTimeMillis()
+      val a = hasNext
+      Main.hasNextTime += System.currentTimeMillis()
+      a
+    }
+
+    override def next(): P = nextPosition
   }
+
+//  override
+//  def nextPositions(player: PlayerColor)(implicit forbidden: Set[ZCode128]): Iterator[P] = {
+//    for (x <- Position.intersections; n <- withMove(x, player)) yield n
+//  }
 
   override
   def withMove(move: Move, player: PlayerColor)(implicit prev: Set[ZCode128]): P = move match {
@@ -36,10 +64,15 @@ protected trait PositionInternal[+P <: Position] extends Position {
   protected[this] def nextPositionBuilder: Builder[P]
 
   protected[this] def withMove(x: Intersection, color: PlayerColor)
-                            (implicit forbidden: Set[ZCode128]): Option[P] = this(x) match {
-    case None => Some(nextPositionBuilder.playAt(x, color).build)
-      .filterNot(p => forbidden(p.toZobristCode))
-    case _ => Option.empty
+                            (implicit forbidden: Set[ZCode128]): Option[P] = {
+    Main.withMoveTime -= System.currentTimeMillis()
+    val a = this(x) match {
+      case None => Some(nextPositionBuilder.playAt(x, color).build)
+        .filterNot(p => forbidden(p.toZobristCode))
+      case _ => Option.empty
+    }
+    Main.withMoveTime += System.currentTimeMillis()
+    a
   }
 
   override def toZobristCode: ZCode128 = ZobristCoder.get.computeCode((i, j) => this(i, j))

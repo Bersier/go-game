@@ -33,10 +33,10 @@ protected trait Builder[+P <: Position] extends AbstractPosition {
     Main.canonifyTime -= System.currentTimeMillis()
     val f = (index: Int) => (e: Dihedral4) => {
       val newIndex = 4 * index
-      (this(e(Intersection.fromIndex(newIndex))).toInt << 6) +
-      (this(e(Intersection.fromIndex(newIndex + 1))).toInt << 4) +
-      (this(e(Intersection.fromIndex(newIndex + 2))).toInt << 2) +
-       this(e(Intersection.fromIndex(newIndex + 3))).toInt
+      (this.colorToIntAt(e(Intersection.fromIndex(newIndex))) << 6) +
+      (this.colorToIntAt(e(Intersection.fromIndex(newIndex + 1))) << 4) +
+      (this.colorToIntAt(e(Intersection.fromIndex(newIndex + 2))) << 2) +
+       this.colorToIntAt(e(Intersection.fromIndex(newIndex + 3)))
     }
     Main.maxIteratorTime -= System.currentTimeMillis()
     // The last intersection never actually needs to get checked to find the canonical position.
@@ -175,8 +175,10 @@ protected trait Builder[+P <: Position] extends AbstractPosition {
   private[this] def cleanup(x: Intersection, color: PlayerColor)(implicit size: Size) {
     Main.cleanupTime -= System.currentTimeMillis()
     assert(apply(x) == color)
+    val visited = IntersectionSet.empty
     def removeDead(x: Intersection, color: PlayerColor)(alive: mutable.Set[Intersection]) {
-      val visited = IntersectionSet.empty
+      Main.removeDeadCount += 1
+      visited.clear()
       def isAlive(x: Intersection): Boolean = {
         if (alive(x)) true
         else if (visited(x)) false
@@ -195,23 +197,23 @@ protected trait Builder[+P <: Position] extends AbstractPosition {
           this(x) = None
         }
       }
+
     }
 
-    val transAlives = IntersectionSet.empty
+    lazy val transAlives = IntersectionSet.empty
     var liberty = false
     for (n <- x.neighbors) {
       if (this(n) == color.dual) {
         removeDead(n, color.dual)(transAlives)
       }
-      if (this(n) == None) {
-        liberty = true
-      }
+      liberty |= this(n) == None
     }
 
     if (! liberty) {
       removeDead(x, color)(Utils.mockSet)
     }
     Main.cleanupTime += System.currentTimeMillis()
+    Main.cleanupCount += 1
   }
 }
 

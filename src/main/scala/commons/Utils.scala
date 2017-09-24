@@ -47,9 +47,11 @@ object Utils {
   }
 
   def cheapShuffledRange(n: Int): Iterable[Int] = new Iterable[Int] {
-    private[this] val source = intPseudoShuffle(intLog(n - 1) + 1)
+    println("n = " + n)
+    private[this] val source = intPseudoShuffle(intLength(n - 1))
 
     override def iterator: Iterator[Int] = new Iterator[Int] {
+      println("------------")
       private[this] var i = 0
       private[this] var used = 0
 
@@ -58,6 +60,7 @@ object Utils {
       override def next(): Int = {
         def findNext(): Int = {
           val candidate: Int = source(i)
+          println("candidate = " + candidate)
           i += 1
           if (candidate < n) candidate
           else findNext()
@@ -68,20 +71,23 @@ object Utils {
     }
   }
 
-  def intLog(n: Int): Int = {
-    def intLog(n: Int, acc: Int): Int = {
-      if (n == 0) acc else intLog(n >>> 1, acc + 1)
+  def intLength(n: Int): Int = {
+    def intLength(n: Int, acc: Int): Int = {
+      if (n == 0) acc else intLength(n >>> 1, acc + 1)
     }
-    intLog(n, 0)
+    intLength(n, 0)
   }
 
   /**
+    * This method should not be used to generate random-looking permutations. There is a strong
+    * positive correlation between one number of the permutation and the next.
+    *
     * The permutation of an element is obtained by applying a fixed random permutation of its bits
     * and a random bitmask to it.
     *
     * All possible permutations obtained in this way form a subgroup of the permutation group.
     */
-  def intPseudoShuffle(log2: Int) = new IndexedSeq[Int] {
+  def intPseudoShuffle(log2: Int): IndexedSeq[Int] = new IndexedSeq[Int] {
     assert(log2 + 1 < 32)
 
     private[this] val mask = Random.nextInt >>> (32 - log2)
@@ -99,7 +105,7 @@ object Utils {
   }
 
   // can be improved by using a binary tree bit set where the nodes keep track of unused bits below
-  def shuffledRange(n: Int): TraversableOnce[Int] = new Iterator[Int] {
+  def shuffledRange(n: Int): Iterator[Int] = new Iterator[Int] {
     private[this] var used = {
       val bitSet: mutable.BitSet = mutable.BitSet(n - 1)
       bitSet -= n - 1
@@ -195,11 +201,11 @@ object Utils {
 
   /**
     * @param collection is required to be non-empty
-    * @param f maps the elements of the collection to values of a type that can be ordered
+    * @param f maps the elements of the collection to Ints
     * @return all the elements in the collection that yield maximal values under f
     */
-  def argsMax[A, B](collection: Iterator[A])
-                   (f: A => B)(implicit ord: Ordering[B]): IndexedSeq[A] = {
+  def argsMax[A](collection: Iterator[A])
+                   (f: A => Int): IndexedSeq[A] = {
     Main.argsMaxTime -= System.currentTimeMillis()
     val next = collection.next
     var argMax = ArrayBuffer(next)
@@ -214,8 +220,8 @@ object Utils {
       Main.fCount += 1
       Main.fakeTime -= System.currentTimeMillis()
       Main.fakeTime += System.currentTimeMillis()
-      if (ord.gteq(fa, max)) {
-        if (ord.gt(fa, max)) {
+      if (fa <= max) {
+        if (fa < max) {
           argMax = ArrayBuffer(a)
           max = fa
         }

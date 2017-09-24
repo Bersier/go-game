@@ -29,6 +29,10 @@ final class IntersectionSet private(private val representation: Array[Int])
     ((representation(x.i) >>> x.j) & 1) == 1
   }
 
+  override def clear(): Unit = {
+    java.util.Arrays.fill(representation, 0)
+  }
+
   override def iterator: Iterator[Intersection] = new Iterator[Intersection] {
     private[this] var i = 0
     private[this] var j = 0

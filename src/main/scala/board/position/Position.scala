@@ -62,9 +62,7 @@ object Position {
     * @return all the intersections of a board of the given size
     */
   def intersections(implicit size: Size): Iterator[Intersection] = {
-    for (k <- Utils.cheapShuffledRange(size * size).iterator) yield {
-      Intersection(k / size, k % size)
-    }
+    for (k <- Utils.shuffledRange(size * size)) yield Intersection(k / size, k % size)
   }
 
   /**
