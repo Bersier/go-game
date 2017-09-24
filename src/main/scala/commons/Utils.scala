@@ -30,6 +30,8 @@ object Utils {
     override def --=(xs: TraversableOnce[Any]): MockSet.type = this
   }
 
+  def isPowerOfTwo(n: Int): Boolean = (n & (n - 1)) == 0
+
   def shuffledRange(n: Short): Array[Short] = {
     val result = (0 until n).view.map(_.toShort).toArray
     shuffle(result)
